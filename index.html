@@ -1047,8 +1047,8 @@ body {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 12px 14px;
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: end;
 }
@@ -3692,8 +3692,9 @@ const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
         <div class="form-group">
           <label class="form-label" for="pi-nome-${i}">Nome</label>
           <input type="text" class="form-input" id="pi-nome-${i}"
-                 value="${Helpers.escapeHtml(pi.nome || '')}"
-                 placeholder="Nome e relação (ex: João - Filho)">
+       value="${Helpers.escapeHtml(pi.nome || '')}"
+       placeholder="Nome e relação (ex: João - Filho)"
+       style="min-width:160px; flex:3;">
         </div>
         <div class="form-group">
           <label class="form-label" for="pi-data-${i}">Aniversário</label>
