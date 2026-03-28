@@ -2545,10 +2545,24 @@ body {
           <span class="form-error" id="err-nome" role="alert" aria-live="polite"></span>
         </div>
         <div class="form-group">
-          <label class="form-label" for="f-data">Data de Aniversário <span class="form-required" aria-label="obrigatório">*</span></label>
-          <input type="date" class="form-input" id="f-data">
-          <span class="form-error" id="err-data" role="alert" aria-live="polite"></span>
-        </div>
+  <label class="form-label" for="f-data-dia">Data de Aniversário <span class="form-required" aria-label="obrigatório">*</span></label>
+  <div style="display:flex; gap:8px;">
+    <input type="number" class="form-input" id="f-data-dia"
+           placeholder="Dia" min="1" max="31" style="width:80px;">
+    <select class="form-input" id="f-data-mes" style="flex:1;">
+      <option value="">Mês...</option>
+      <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+      <option value="03">Março</option><option value="04">Abril</option>
+      <option value="05">Maio</option><option value="06">Junho</option>
+      <option value="07">Julho</option><option value="08">Agosto</option>
+      <option value="09">Setembro</option><option value="10">Outubro</option>
+      <option value="11">Novembro</option><option value="12">Dezembro</option>
+    </select>
+    <input type="number" class="form-input" id="f-data-ano"
+           placeholder="Ano (opcional)" min="1900" max="2099" style="width:130px;">
+  </div>
+  <span class="form-error" id="err-data" role="alert" aria-live="polite"></span>
+</div>
         <div class="form-group">
           <label class="form-label" for="f-telefone">Telefone <span class="form-required" aria-label="obrigatório">*</span></label>
           <input type="tel" class="form-input" id="f-telefone" placeholder="(87) 99999-9999"
@@ -3536,7 +3550,10 @@ const ClientModal = (() => {
     document.getElementById('js-modal-subtitle').textContent  = Helpers.escapeHtml(c.nome);
     _clearErrors();
     document.getElementById('f-nome').value     = c.nome;
-    document.getElementById('f-data').value     = c.dataNascimento || '';
+    const _dp = (c.dataNascimento || '').split('-');
+document.getElementById('f-data-ano').value = _dp[0] && _dp[0] !== '0000' ? _dp[0] : '';
+document.getElementById('f-data-mes').value = _dp[1] || '';
+document.getElementById('f-data-dia').value = _dp[2] ? parseInt(_dp[2]) : '';
     document.getElementById('f-telefone').value = c.telefone || '';
     document.getElementById('f-cidade').value   = c.cidade   || '';
     document.getElementById('f-obs').value      = c.observacoes || '';
@@ -3632,14 +3649,29 @@ const ClientModal = (() => {
 
   function _syncPIFromDOM() {
     const items = document.querySelectorAll('#js-pi-items .pi-item');
-    _piFields = Array.from(items).map(item => {
-      const inputs = item.querySelectorAll('input');
+    _piFields = Array.from(items).map((item, i) => {
+      const nomeInput = item.querySelector(`#pi-nome-${i}`);
+      const diaInput  = item.querySelector(`#pi-data-dia-${i}`);
+      const mesSelect = item.querySelector(`#pi-data-mes-${i}`);
+      const anoInput  = item.querySelector(`#pi-data-ano-${i}`);
+      const dia = (diaInput?.value || '').padStart(2, '0');
+      const mes = mesSelect?.value || '';
+      const ano = anoInput?.value || '';
+      const data = (dia && mes)
+        ? (ano ? `${ano}-${mes}-${dia}` : `0000-${mes}-${dia}`)
+        : '';
       return {
-        nome: (inputs[0]?.value || '').trim(),
-        dataAniversario: inputs[1]?.value || ''
+        nome: (nomeInput?.value || '').trim(),
+        dataAniversario: data
       };
     });
   }
+
+     function _mesVal(dataStr) {
+  if (!dataStr) return '';
+  const parts = dataStr.includes('-') ? dataStr.split('-') : dataStr.split('/');
+  return parts.length >= 2 ? (dataStr.includes('-') ? parts[1] : parts[1]) : '';
+}
 
   function _renderPIFields() {
     const container = document.getElementById('js-pi-items');
@@ -3658,8 +3690,29 @@ const ClientModal = (() => {
         </div>
         <div class="form-group">
           <label class="form-label" for="pi-data-${i}">Aniversário</label>
-          <input type="date" class="form-input" id="pi-data-${i}"
-                 value="${Helpers.escapeHtml(pi.dataAniversario || '')}">
+          <div style="display:flex; gap:6px;">
+  <input type="number" class="form-input" id="pi-data-dia-${i}"
+         placeholder="Dia" min="1" max="31" style="width:72px;"
+         value="${pi.dataAniversario ? parseInt(pi.dataAniversario.split('-')[2] || pi.dataAniversario.split('/')[0]) : ''}">
+  <select class="form-input" id="pi-data-mes-${i}" style="flex:1;">
+    <option value="">Mês...</option>
+    <option value="01" ${_mesVal(pi.dataAniversario)==='01'?'selected':''}>Janeiro</option>
+    <option value="02" ${_mesVal(pi.dataAniversario)==='02'?'selected':''}>Fevereiro</option>
+    <option value="03" ${_mesVal(pi.dataAniversario)==='03'?'selected':''}>Março</option>
+    <option value="04" ${_mesVal(pi.dataAniversario)==='04'?'selected':''}>Abril</option>
+    <option value="05" ${_mesVal(pi.dataAniversario)==='05'?'selected':''}>Maio</option>
+    <option value="06" ${_mesVal(pi.dataAniversario)==='06'?'selected':''}>Junho</option>
+    <option value="07" ${_mesVal(pi.dataAniversario)==='07'?'selected':''}>Julho</option>
+    <option value="08" ${_mesVal(pi.dataAniversario)==='08'?'selected':''}>Agosto</option>
+    <option value="09" ${_mesVal(pi.dataAniversario)==='09'?'selected':''}>Setembro</option>
+    <option value="10" ${_mesVal(pi.dataAniversario)==='10'?'selected':''}>Outubro</option>
+    <option value="11" ${_mesVal(pi.dataAniversario)==='11'?'selected':''}>Novembro</option>
+    <option value="12" ${_mesVal(pi.dataAniversario)==='12'?'selected':''}>Dezembro</option>
+  </select>
+  <input type="number" class="form-input" id="pi-data-ano-${i}"
+         placeholder="Ano (op.)" min="1900" max="2099" style="width:100px;"
+         value="${pi.dataAniversario ? (pi.dataAniversario.split('-')[0]?.length===4 ? pi.dataAniversario.split('-')[0] : '') : ''}">
+</div>
         </div>
         <button class="btn-icon btn-icon--delete"
                 onclick="ClientModal.removePIField(${i})"
@@ -3675,7 +3728,7 @@ const ClientModal = (() => {
   }
 
   function _clearForm() {
-    ['f-nome','f-data','f-telefone','f-cidade','f-obs'].forEach(id => {
+    ['f-nome','f-data-dia','f-data-mes','f-data-ano','f-telefone','f-cidade','f-obs'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
