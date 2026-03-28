@@ -1736,7 +1736,7 @@ body {
 <!-- ============================================================
      TELA DE LOGIN
      ============================================================ -->
-<div id="auth-screen" style="display:none; position:fixed; inset:0; z-index:10000;
+<div id="auth-screen" "display:none; position:fixed; inset:0; z-index:10000;
   background:var(--bg-base); align-items:center; justify-content:center; flex-direction:column;">
   <div style="width:100%; max-width:380px; padding:0 24px;">
     <!-- Logo -->
@@ -3694,7 +3694,8 @@ const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
           <input type="text" class="form-input" id="pi-nome-${i}"
        value="${Helpers.escapeHtml(pi.nome || '')}"
        placeholder="Nome e relação (ex: João - Filho)"
-       style="min-width:160px; flex:3;">
+style="min-width:200px; flex:5; width:auto;"
+oninput="this.style.width = Math.max(200, this.scrollWidth) + 'px'">
         </div>
         <div class="form-group">
           <label class="form-label" for="pi-data-${i}">Aniversário</label>
