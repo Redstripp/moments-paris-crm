@@ -1,30 +1,49 @@
-const express = require('express');
-const cors    = require('cors');
+const express   = require('express');
+const cors      = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Sua chave da Anthropic — coloque aqui ou use variável de ambiente
-const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || 'sk-ant-SUA-CHAVE-AQUI';
-const MODEL         = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS    = 1024;
+const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY || 'sk-ant-SUA-CHAVE-AQUI';
+const PROXY_SECRET   = process.env.PROXY_SECRET || '';   // token secreto
+const MODEL          = 'claude-haiku-4-5-20251001';
+const MAX_TOKENS     = 1024;
 
 app.use(cors({
   origin: 'https://Redstripp.github.io',
   methods: ['POST', 'GET'],
-})); // permite chamadas do GitHub Pages
-app.use(express.json({ limit: '2mb' }));
+}));
+app.use(express.json({ limit: '500kb' }));  // reduzido de 2mb para 500kb
+
+// ── Rate limiting: 10 requests por minuto por IP ──────────────
+const limiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: { error: 'Muitas requisições. Tente em 1 minuto.' }
+});
+app.use('/api/ai', limiter);
 
 // ── Health check ──────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({ status: 'ok', service: "Moment's Paris AI Proxy" });
 });
 
-// ── Endpoint principal chamado pelo CRM ──────────────────────
-app.post('/api/ai', async (req, res) => {
+// ── Middleware de autenticação por token ──────────────────────
+function requireToken(req, res, next) {
+  if (!PROXY_SECRET) return next(); // sem secret configurado, passa
+  const token = req.headers['x-proxy-token'];
+  if (!token || token !== PROXY_SECRET) {
+    return res.status(401).json({ error: 'Não autorizado.' });
+  }
+  next();
+}
+
+// ── Endpoint principal ────────────────────────────────────────
+app.post('/api/ai', requireToken, async (req, res) => {
   const { system, messages } = req.body;
 
-  if (!system || !messages || !Array.isArray(messages)) {
+  if (!system || !messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Campos system e messages são obrigatórios.' });
   }
 
