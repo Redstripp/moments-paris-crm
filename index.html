@@ -4596,7 +4596,7 @@ INSTRUÇÕES:
         throw new Error('PROXY_NOT_SET');
       }
 
-const _controller = new AbortController();
+      const _controller = new AbortController();
       const _timeoutId  = setTimeout(() => _controller.abort(), 30000);
 
       let apiResponse;
