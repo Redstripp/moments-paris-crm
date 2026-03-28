@@ -5,10 +5,20 @@ const rateLimit = require('express-rate-limit');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-const ANTHROPIC_KEY  = process.env.ANTHROPIC_API_KEY || 'sk-ant-SUA-CHAVE-AQUI';
-const PROXY_SECRET   = process.env.PROXY_SECRET || '';   // token secreto
-const MODEL          = 'claude-haiku-4-5-20251001';
-const MAX_TOKENS     = 1024;
+const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || '';
+const PROXY_SECRET  = process.env.PROXY_SECRET  || '';
+const MODEL         = 'claude-haiku-4-5-20251001';
+const MAX_TOKENS    = 1024;
+
+// ── Validação de variáveis obrigatórias na inicialização ──────
+if (!ANTHROPIC_KEY) {
+  console.error('❌ FATAL: variável de ambiente ANTHROPIC_API_KEY não definida. Configure-a antes de iniciar.');
+  process.exit(1);
+}
+if (!PROXY_SECRET) {
+  console.error('❌ FATAL: variável de ambiente PROXY_SECRET não definida. O endpoint ficaria aberto sem ela. Configure-a antes de iniciar.');
+  process.exit(1);
+}
 
 app.use(cors({
   origin: 'https://redstripp.github.io',
@@ -31,7 +41,7 @@ app.get('/', (req, res) => {
 
 // ── Middleware de autenticação por token ──────────────────────
 function requireToken(req, res, next) {
-  if (!PROXY_SECRET) return next(); // sem secret configurado, passa
+  // PROXY_SECRET é garantido não-vazio pelo check de inicialização acima
   const token = req.headers['x-proxy-token'];
   if (!token || token !== PROXY_SECRET) {
     return res.status(401).json({ error: 'Não autorizado.' });
