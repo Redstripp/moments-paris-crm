@@ -3694,8 +3694,9 @@ const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
           <input type="text" class="form-input" id="pi-nome-${i}"
        value="${Helpers.escapeHtml(pi.nome || '')}"
        placeholder="Nome e relação (ex: João - Filho)"
-style="min-width:200px; flex:5; width:auto;"
-oninput="this.style.width = Math.max(200, this.scrollWidth) + 'px'">
+       size="${Math.max(30, (pi.nome || '').length + 5)}"
+       oninput="this.size = Math.max(30, this.value.length + 5)"
+       style="width:auto; max-width:100%;">
         </div>
         <div class="form-group">
           <label class="form-label" for="pi-data-${i}">Aniversário</label>
