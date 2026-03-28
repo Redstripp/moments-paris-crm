@@ -3604,6 +3604,7 @@ const ClientModal = (() => {
       }
       close();
       await App.refresh();
+      DB.getAll(false).then(lista => { window._ia_clientes_cache = lista; });
     } catch (e) {
       Toast.show(e.message || 'Erro ao salvar cliente. Tente novamente.', 'error');
     } finally {
@@ -4879,8 +4880,6 @@ const AuthModule = (() => {
     if (!_sb) return;
     await _sb.auth.signOut();
     // onAuthStateChange vai chamar showLoginScreen automaticamente
-    // Recarrega a página para limpar o estado
-    window.location.reload();
   }
 
   return { init, submit, toggleMode, showLoginScreen, hideLoginScreen, setUserEmail, logout };
