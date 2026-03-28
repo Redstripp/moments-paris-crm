@@ -4588,7 +4588,10 @@ INSTRUÇÕES:
 
       const apiResponse = await fetch(PROXY_URL + '/api/ai', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+    'Content-Type': 'application/json',
+    'x-proxy-token': localStorage.getItem('mp_proxy_token') || ''
+  },
         body: JSON.stringify({
           system:   systemPrompt,
           messages: recentHistory
