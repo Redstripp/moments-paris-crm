@@ -47,6 +47,18 @@ app.post('/api/ai', requireToken, async (req, res) => {
     return res.status(400).json({ error: 'Campos system e messages são obrigatórios.' });
   }
 
+  // ── Validação de tamanho ──────────────────────────────────────
+  if (system.length > 50_000) {
+    return res.status(400).json({ error: 'System prompt muito longo (máx. 50.000 caracteres).' });
+  }
+  if (messages.length > 20) {
+    return res.status(400).json({ error: 'Muitas mensagens no histórico (máx. 20).' });
+  }
+  const msgMuitoLonga = messages.find(m => (m?.content?.length ?? 0) > 10_000);
+  if (msgMuitoLonga) {
+    return res.status(400).json({ error: 'Uma ou mais mensagens excedem 10.000 caracteres.' });
+  }
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
