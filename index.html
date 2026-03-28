@@ -3701,7 +3701,7 @@ const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
   <input type="number" class="form-input" id="pi-data-dia-${i}"
          placeholder="Dia" min="1" max="31" style="width:72px;"
          value="${pi.dataAniversario ? parseInt(pi.dataAniversario.split('-')[2] || pi.dataAniversario.split('/')[0]) : ''}">
-  <select class="form-input" id="pi-data-mes-${i}" style="flex:1;">
+  <select class="form-input" id="pi-data-mes-${i}" style="flex:2; min-width:120px;">
     <option value="">Mês...</option>
     <option value="01" ${_mesVal(pi.dataAniversario)==='01'?'selected':''}>Janeiro</option>
     <option value="02" ${_mesVal(pi.dataAniversario)==='02'?'selected':''}>Fevereiro</option>
