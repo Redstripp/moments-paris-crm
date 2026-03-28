@@ -43,6 +43,13 @@ function requireToken(req, res, next) {
 app.post('/api/ai', requireToken, async (req, res) => {
   const { system, messages } = req.body;
 
+  // ── Log estruturado de entrada ────────────────────────────────
+  console.log(JSON.stringify({
+    ts:          new Date().toISOString(),
+    event:       'ai_request',
+    systemChars: typeof system === 'string' ? system.length : null,
+    msgCount:    Array.isArray(messages) ? messages.length : null,
+  }));
   if (!system || !messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'Campos system e messages são obrigatórios.' });
   }
