@@ -2421,6 +2421,10 @@ body {
       <button class="btn btn--secondary btn--sm" onclick="IAModule.saveKey()">
         💾 Salvar
       </button>
+      <input type="text" class="ia-key-input" id="ia-proxy-token"
+             placeholder="Cole o token secreto do backend"
+             autocomplete="off" spellcheck="false"
+             style="max-width:260px;">
       <button class="btn btn--secondary btn--sm" onclick="IAModule.clearChat()">
         🗑️ Limpar
       </button>
@@ -4439,13 +4443,20 @@ const IAModule = (() => {
       return;
     }
     localStorage.setItem('mp_proxy_url', val.replace(/\/$/, ''));
+
+    // Salva o token secreto também
+    const tokenVal = document.getElementById('ia-proxy-token').value.trim();
+    if (tokenVal) {
+      localStorage.setItem('mp_proxy_token', tokenVal);
+    }
+
     _enableInput(true);
     const statusEl = document.getElementById('ia-key-status');
     if (statusEl) {
       statusEl.className = 'ia-key-status ia-key-status--ok';
       statusEl.textContent = '✓ Backend configurado';
     }
-    Toast.show('URL do backend salva ✓', 'success');
+    Toast.show('URL e token salvos ✓', 'success');
   }
 
   function _setKeyStatus(type) {}
