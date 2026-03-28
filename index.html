@@ -4475,11 +4475,18 @@ const IAModule = (() => {
   function _buildContext() {
     const allClientes = window._ia_clientes_cache || [];
 
-    // Monta texto compacto de clientes com suas compras
+    // Monta texto compacto de clientes com suas compras — acumula estatísticas em única passagem
+    let totalCompras = 0, totalReceita = 0, clientesSem = 0;
+
     const clientesTxt = allClientes.map(c => {
       const compras    = DB_Compras.getByClient(c.id);
       const totalGasto = compras.reduce((s, cp) => s + (cp.total || 0), 0);
       const nCompras   = compras.length;
+
+      totalCompras += nCompras;
+      totalReceita += totalGasto;
+      if (nCompras === 0) clientesSem++;
+
       const ultimaCompra = nCompras > 0
         ? compras.sort((a, b) => new Date(b.data) - new Date(a.data))[0].data
         : null;
@@ -4497,14 +4504,6 @@ const IAModule = (() => {
       ].join('\n');
     }).join('\n\n');
 
-    // Estatísticas gerais — calculadas a partir dos dados de cada cliente
-    let totalCompras = 0, totalReceita = 0, clientesSem = 0;
-    allClientes.forEach(c => {
-      const compras = DB_Compras.getByClient(c.id);
-      totalCompras += compras.length;
-      totalReceita += compras.reduce((s, cp) => s + (cp.total || 0), 0);
-      if (compras.length === 0) clientesSem++;
-    });
     const ticketMedio = totalCompras > 0 ? totalReceita / totalCompras : 0;
 
     const estatisticas = [
