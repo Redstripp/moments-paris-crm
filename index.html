@@ -1734,6 +1734,83 @@ body {
 <body>
 
 <!-- ============================================================
+     TELA DE LOGIN
+     ============================================================ -->
+<div id="auth-screen" style="display:none; position:fixed; inset:0; z-index:10000;
+  background:var(--bg-base); align-items:center; justify-content:center; flex-direction:column;">
+  <div style="width:100%; max-width:380px; padding:0 24px;">
+    <!-- Logo -->
+    <div style="text-align:center; margin-bottom:40px;">
+      <div style="font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300;
+                  letter-spacing:0.15em; color:var(--gold-light); margin-bottom:4px;">
+        MOMENT'S
+      </div>
+      <div style="font-family:'Montserrat',sans-serif; font-size:9px; font-weight:500;
+                  letter-spacing:0.35em; color:var(--text-muted); text-transform:uppercase;">
+        Paris · CRM
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div style="background:var(--bg-raised); border:1px solid var(--border-subtle);
+                border-radius:12px; padding:32px 28px;">
+      <div id="auth-title" style="font-family:'Cormorant Garamond',serif; font-size:20px;
+                font-weight:400; color:var(--text-primary); margin-bottom:24px; text-align:center;">
+        Entrar na sua conta
+      </div>
+
+      <!-- Mensagem de erro/sucesso -->
+      <div id="auth-msg" style="display:none; font-size:12px; padding:10px 14px;
+           border-radius:6px; margin-bottom:16px; text-align:center;"></div>
+
+      <!-- Campos -->
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px; font-weight:500; color:var(--text-secondary);
+                       letter-spacing:0.05em; display:block; margin-bottom:6px;">E-MAIL</label>
+        <input id="auth-email" type="email" placeholder="seu@email.com"
+               style="width:100%; box-sizing:border-box; padding:10px 14px; font-size:13px;
+                      background:var(--bg-base); border:1px solid var(--border-subtle);
+                      border-radius:8px; color:var(--text-primary); outline:none;
+                      font-family:'Montserrat',sans-serif;"
+               onkeydown="if(event.key==='Enter') AuthModule.submit()">
+      </div>
+      <div style="margin-bottom:22px;">
+        <label style="font-size:11px; font-weight:500; color:var(--text-secondary);
+                       letter-spacing:0.05em; display:block; margin-bottom:6px;">SENHA</label>
+        <input id="auth-password" type="password" placeholder="••••••••"
+               style="width:100%; box-sizing:border-box; padding:10px 14px; font-size:13px;
+                      background:var(--bg-base); border:1px solid var(--border-subtle);
+                      border-radius:8px; color:var(--text-primary); outline:none;
+                      font-family:'Montserrat',sans-serif;"
+               onkeydown="if(event.key==='Enter') AuthModule.submit()">
+      </div>
+
+      <!-- Botão principal -->
+      <button id="auth-btn" onclick="AuthModule.submit()"
+              style="width:100%; padding:12px; font-size:12px; font-weight:600;
+                     letter-spacing:0.1em; text-transform:uppercase; cursor:pointer;
+                     background:var(--gold); color:#000; border:none; border-radius:8px;
+                     font-family:'Montserrat',sans-serif; transition:opacity .2s;">
+        Entrar
+      </button>
+
+      <!-- Link alternar login/cadastro -->
+      <div style="text-align:center; margin-top:18px;">
+        <span style="font-size:12px; color:var(--text-muted);" id="auth-toggle-text">
+          Não tem conta?
+        </span>
+        <button onclick="AuthModule.toggleMode()"
+                style="background:none; border:none; cursor:pointer; font-size:12px;
+                       color:var(--gold-light); font-family:'Montserrat',sans-serif;
+                       margin-left:4px; padding:0; text-decoration:underline;">
+          <span id="auth-toggle-btn">Criar conta</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      TELA DE CARREGAMENTO INICIAL
      ============================================================ -->
 <div id="app-loader" style="
@@ -1850,6 +1927,19 @@ body {
   </nav>
 
   <div class="sidebar__footer">
+    <div id="auth-user-email" style="font-size:10px; color:var(--text-muted);
+         margin-bottom:10px; word-break:break-all; line-height:1.4;"></div>
+    <button onclick="AuthModule.logout()"
+            style="width:100%; padding:8px; font-size:11px; font-weight:500;
+                   letter-spacing:0.08em; text-transform:uppercase; cursor:pointer;
+                   background:transparent; color:var(--text-muted);
+                   border:1px solid var(--border-subtle); border-radius:6px;
+                   font-family:'Montserrat',sans-serif; transition:all .2s;
+                   margin-bottom:10px;"
+            onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'"
+            onmouseout="this.style.borderColor='var(--border-subtle)';this.style.color='var(--text-muted)'">
+      Sair
+    </button>
     © 2025 Moment's Paris<br>
     <span>Sistema CRM Inteligente</span>
   </div>
@@ -4689,6 +4779,124 @@ INSTRUÇÕES:
 })();
 
 /* ============================================================
+   MÓDULO: AUTH — Autenticação com Supabase
+   ============================================================ */
+const AuthModule = (() => {
+  'use strict';
+  let _mode = 'login'; // 'login' | 'signup'
+  let _sb   = null;
+
+  function init(supabaseClient) {
+    _sb = supabaseClient;
+  }
+
+  function _showMsg(msg, isError = true) {
+    const el = document.getElementById('auth-msg');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.background = isError ? 'rgba(192,57,43,0.12)' : 'rgba(39,174,96,0.12)';
+    el.style.color = isError ? 'var(--danger)' : 'var(--success)';
+    el.style.border = isError ? '1px solid rgba(192,57,43,0.25)' : '1px solid rgba(39,174,96,0.25)';
+  }
+
+  function _setLoading(loading) {
+    const btn = document.getElementById('auth-btn');
+    if (!btn) return;
+    btn.disabled = loading;
+    btn.textContent = loading ? 'Aguarde...' : (_mode === 'login' ? 'Entrar' : 'Criar conta');
+    btn.style.opacity = loading ? '0.6' : '1';
+  }
+
+  function toggleMode() {
+    _mode = _mode === 'login' ? 'signup' : 'login';
+    document.getElementById('auth-title').textContent =
+      _mode === 'login' ? 'Entrar na sua conta' : 'Criar nova conta';
+    document.getElementById('auth-btn').textContent =
+      _mode === 'login' ? 'Entrar' : 'Criar conta';
+    document.getElementById('auth-toggle-text').textContent =
+      _mode === 'login' ? 'Não tem conta?' : 'Já tem conta?';
+    document.getElementById('auth-toggle-btn').textContent =
+      _mode === 'login' ? 'Criar conta' : 'Fazer login';
+    document.getElementById('auth-msg').style.display = 'none';
+  }
+
+  async function submit() {
+    if (!_sb) return;
+    const email    = document.getElementById('auth-email').value.trim();
+    const password = document.getElementById('auth-password').value;
+
+    if (!email || !password) {
+      _showMsg('Preencha e-mail e senha.'); return;
+    }
+    if (password.length < 6) {
+      _showMsg('A senha deve ter pelo menos 6 caracteres.'); return;
+    }
+
+    _setLoading(true);
+    document.getElementById('auth-msg').style.display = 'none';
+
+    try {
+      if (_mode === 'login') {
+        const { error } = await _sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        // Sucesso — o listener onAuthStateChange vai esconder a tela de login
+      } else {
+        const { error } = await _sb.auth.signUp({ email, password });
+        if (error) throw error;
+        _showMsg('Conta criada! Verifique seu e-mail para confirmar.', false);
+        setTimeout(() => toggleMode(), 2500);
+      }
+    } catch (e) {
+      const msg = e.message || '';
+      if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) {
+        _showMsg('E-mail ou senha incorretos.');
+      } else if (msg.includes('Email not confirmed')) {
+        _showMsg('Confirme seu e-mail antes de entrar.');
+      } else if (msg.includes('already registered') || msg.includes('User already registered')) {
+        _showMsg('Este e-mail já tem uma conta. Faça login.');
+        setTimeout(() => toggleMode(), 1800);
+      } else {
+        _showMsg(msg || 'Erro desconhecido.');
+      }
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  function showLoginScreen() {
+    const el = document.getElementById('auth-screen');
+    if (el) el.style.display = 'flex';
+    // Limpa campos
+    const em = document.getElementById('auth-email');
+    const pw = document.getElementById('auth-password');
+    if (em) em.value = '';
+    if (pw) pw.value = '';
+    document.getElementById('auth-msg').style.display = 'none';
+  }
+
+  function hideLoginScreen() {
+    const el = document.getElementById('auth-screen');
+    if (el) el.style.display = 'none';
+  }
+
+  function setUserEmail(email) {
+    const el = document.getElementById('auth-user-email');
+    if (el && email) el.textContent = '👤 ' + email;
+  }
+
+  async function logout() {
+    if (!_sb) return;
+    await _sb.auth.signOut();
+    // onAuthStateChange vai chamar showLoginScreen automaticamente
+    // Recarrega a página para limpar o estado
+    window.location.reload();
+  }
+
+  return { init, submit, toggleMode, showLoginScreen, hideLoginScreen, setUserEmail, logout };
+})();
+
+/* ============================================================
    BOOT — Inicialização Assíncrona do Sistema
    Ordem: conectar Supabase → carregar dados → renderizar UI
    ============================================================ */
@@ -4712,30 +4920,55 @@ INSTRUÇÕES:
   }
 
   try {
-    // 1. Conecta ao Supabase e carrega dados
+    // 1. Conecta ao Supabase (sem carregar dados ainda)
     await DB.connect();
+    const _sb = DB.getClient();
 
-    // 1b. Inicializa módulo de compras com o mesmo cliente Supabase
-    DB_Compras.init(DB.getClient());
-    await DB_Compras.getAll(true); // pré-carrega compras
+    // 2. Inicializa o AuthModule com o cliente Supabase
+    AuthModule.init(_sb);
 
-    // 2. Renderiza o dashboard inicial
-    await DashboardPage.render();
+    // 3. Escuta mudanças de autenticação
+    _sb.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        // Usuário logado — esconde login, carrega app
+        AuthModule.hideLoginScreen();
 
-    // 2b. Cria snapshot de clientes para o módulo de IA
-    //     (necessário pois DB.getAll() é assíncrono)
-    DB.getAll(false).then(lista => { window._ia_clientes_cache = lista; });
+        // Mostra email do usuário no sidebar
+        AuthModule.setUserEmail(session.user?.email);
 
-    // 2c. Inicializa o módulo de IA (carrega chave salva)
-    IAModule.init();
+        // Só inicializa o app na primeira vez (SIGNED_IN)
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          try {
+            DB_Compras.init(_sb);
+            await DB_Compras.getAll(true);
+            await DashboardPage.render();
+            DB.getAll(false).then(lista => { window._ia_clientes_cache = lista; });
+            IAModule.init();
+            hideLoader();
+          } catch(e) {
+            console.error('[APP] Erro ao inicializar:', e);
+            showLoaderError(e.message || 'Erro ao carregar dados.');
+          }
+        }
+      } else {
+        // Sem sessão — mostra tela de login
+        hideLoader();
+        AuthModule.showLoginScreen();
+      }
+    });
 
-    // 3. Esconde o loader e mostra o app
-    hideLoader();
+    // 4. Verifica sessão atual
+    const { data: { session } } = await _sb.auth.getSession();
+    if (!session) {
+      // Sem sessão ativa — mostra login imediatamente
+      hideLoader();
+      AuthModule.showLoginScreen();
+    }
 
   } catch (e) {
     console.error('[BOOT] Falha na inicialização:', e);
     showLoaderError(e.message || 'Não foi possível conectar ao Supabase.');
-    return; // Para aqui — não inicializa a UI
+    return;
   }
 
   // ── Listeners de UI (só ativam após conexão bem-sucedida) ──
