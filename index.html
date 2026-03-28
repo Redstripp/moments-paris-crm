@@ -3628,7 +3628,7 @@ const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
       }
       close();
       await App.refresh();
-      DB.getAll(false).then(lista => { window._ia_clientes_cache = lista; });
+      DB.getAll(false).then(lista => { IAModule.refreshContext(lista); });
     } catch (e) {
       Toast.show(e.message || 'Erro ao salvar cliente. Tente novamente.', 'error');
     } finally {
@@ -4478,6 +4478,12 @@ const IAModule = (() => {
   let _history = [];
   let _isLoading = false;
 
+  // Cache privado de clientes — não exposto em window para reduzir superfície de ataque
+  let _clientesCache = [];
+
+  // Atualiza o cache interno (chamado pelo boot e após mutações no CRM)
+  function refreshContext(lista) { _clientesCache = lista || []; }
+
   // ── Inicialização ─────────────────────────────────────────
   function init() {
     const savedProxy = localStorage.getItem('mp_proxy_url') || '';
@@ -4532,58 +4538,147 @@ const IAModule = (() => {
     if (btn) btn.disabled = !enabled;
   }
 
-  // ── Coleta de dados do CRM ────────────────────────────────
-  // Usa apenas funções públicas de DB e DB_Compras (getByClient, formatMoney)
-  // e o snapshot global window._ia_clientes_cache (populado no boot).
-  function _buildContext() {
-    const allClientes = window._ia_clientes_cache || [];
+  // ── RAG: Filtragem de clientes por relevância ────────────
+  // Em vez de enviar todos os dados de todos os clientes a cada request,
+  // calcula estatísticas globais (sem dados pessoais individuais) e envia
+  // apenas os clientes relevantes à pergunta do usuário (máx. MAX_CLIENTES_RAG).
+  // Isso reduz drasticamente o payload, o custo por request e a exposição
+  // de dados pessoais à API externa.
+  const MAX_CLIENTES_RAG = 15; // máximo de clientes enviados por request
 
-    // Monta texto compacto de clientes com suas compras — acumula estatísticas em única passagem
+  // Pré-computa estatísticas globais sem expor dados individuais
+  function _buildEstatisticas(allClientes) {
     let totalCompras = 0, totalReceita = 0, clientesSem = 0;
-
-    const clientesTxt = allClientes.map(c => {
-      const compras    = DB_Compras.getByClient(c.id);
-      const totalGasto = compras.reduce((s, cp) => s + (cp.total || 0), 0);
-      const nCompras   = compras.length;
-
+    for (const c of allClientes) {
+      const compras = DB_Compras.getByClient(c.id);
+      const nCompras = compras.length;
       totalCompras += nCompras;
-      totalReceita += totalGasto;
+      totalReceita += compras.reduce((s, cp) => s + (cp.total || 0), 0);
       if (nCompras === 0) clientesSem++;
-
-      const ultimaCompra = nCompras > 0
-        ? compras.sort((a, b) => new Date(b.data) - new Date(a.data))[0].data
-        : null;
-      const pis  = (c.pessoasImportantes || []).filter(p => p.nome).map(p => p.nome).join(', ');
-      const dias = Helpers.daysUntilBirthday(c.dataNascimento);
-
-      return [
-        `Cliente: ${c.nome}`,
-        `  Cidade: ${c.cidade || 'N/A'}`,
-        `  Aniversário: ${c.dataNascimento || 'N/A'} (em ${dias === 999 ? 'sem data' : dias + ' dias'})`,
-        `  Pessoas Importantes: ${pis || 'nenhuma'}`,
-        `  Total de compras: ${nCompras}`,
-        `  Total gasto: R$ ${totalGasto.toFixed(2)}`,
-        `  Última compra: ${ultimaCompra || 'nunca'}`,
-      ].join('\n');
-    }).join('\n\n');
-
+    }
     const ticketMedio = totalCompras > 0 ? totalReceita / totalCompras : 0;
-
-    const estatisticas = [
+    return [
       `Total de clientes: ${allClientes.length}`,
       `Clientes sem nenhuma compra: ${clientesSem}`,
       `Total de compras registradas: ${totalCompras}`,
       `Receita total: R$ ${totalReceita.toFixed(2)}`,
       `Ticket médio por compra: R$ ${ticketMedio.toFixed(2)}`,
     ].join('\n');
+  }
 
-    return `=== DADOS DO CRM MOMENT'S PARIS ===
+  // Tokeniza texto em palavras normalizadas para comparação
+  function _tokenize(str) {
+    return (str || '').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length > 2);
+  }
 
-ESTATÍSTICAS GERAIS:
-${estatisticas}
+  // Palavras-chave que indicam consulta de visão geral — sem necessidade de dados individuais
+  const _CONSULTAS_GLOBAIS = [
+    'resumo', 'geral', 'total', 'receita', 'faturamento', 'media',
+    'ticket', 'quantos', 'estatistica', 'visao', 'panorama', 'overview',
+    'relatorio', 'balanco', 'consolidado'
+  ];
 
-DADOS DOS CLIENTES:
-${clientesTxt}`;
+  // Pontua um cliente pela relevância à pergunta (retorna número >= 0)
+  function _scoreCliente(cliente, queryTokens) {
+    let score = 0;
+    const campos = [
+      cliente.nome,
+      cliente.cidade,
+      cliente.email,
+      cliente.telefone,
+      (cliente.pessoasImportantes || []).map(p => p.nome).join(' '),
+      cliente.observacoes,
+    ];
+    const clienteTokens = _tokenize(campos.join(' '));
+
+    for (const qt of queryTokens) {
+      for (const ct of clienteTokens) {
+        if (ct === qt) { score += 2; break; }
+        if (ct.startsWith(qt) || qt.startsWith(ct)) { score += 1; break; }
+      }
+    }
+
+    // Bônus: aniversário próximo (útil para perguntas sobre aniversários)
+    const dias = Helpers.daysUntilBirthday(cliente.dataNascimento);
+    if (dias !== 999 && dias <= 30) score += 1;
+
+    return score;
+  }
+
+  // Filtra clientes por relevância à pergunta — retorna no máx. MAX_CLIENTES_RAG
+  function _filtrarClientesRelevantes(allClientes, query) {
+    const queryTokens = _tokenize(query);
+
+    // Consulta de visão geral: retorna lista vazia (só estatísticas são enviadas)
+    const isConsultaGlobal = _CONSULTAS_GLOBAIS.some(kw => queryTokens.includes(kw));
+    if (isConsultaGlobal && queryTokens.length <= 4) return [];
+
+    const scored = allClientes.map(c => ({ c, score: _scoreCliente(c, queryTokens) }));
+    const algumRelevante = scored.some(s => s.score > 0);
+
+    if (!algumRelevante) {
+      // Fallback: clientes com atividade mais recente
+      return allClientes
+        .map(c => {
+          const compras = DB_Compras.getByClient(c.id);
+          const ultima = compras.length > 0
+            ? Math.max(...compras.map(cp => new Date(cp.data).getTime()))
+            : 0;
+          return { c, ultima };
+        })
+        .sort((a, b) => b.ultima - a.ultima)
+        .slice(0, MAX_CLIENTES_RAG)
+        .map(x => x.c);
+    }
+
+    return scored
+      .filter(s => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, MAX_CLIENTES_RAG)
+      .map(s => s.c);
+  }
+
+  // Serializa um cliente para texto compacto destinado à IA
+  function _serializarCliente(c) {
+    const compras    = DB_Compras.getByClient(c.id);
+    const totalGasto = compras.reduce((s, cp) => s + (cp.total || 0), 0);
+    const nCompras   = compras.length;
+    const ultimaCompra = nCompras > 0
+      ? compras.sort((a, b) => new Date(b.data) - new Date(a.data))[0].data
+      : null;
+    const pis  = (c.pessoasImportantes || []).filter(p => p.nome).map(p => p.nome).join(', ');
+    const dias = Helpers.daysUntilBirthday(c.dataNascimento);
+
+    return [
+      `Cliente: ${c.nome}`,
+      `  Cidade: ${c.cidade || 'N/A'}`,
+      `  Aniversário: ${c.dataNascimento || 'N/A'} (em ${dias === 999 ? 'sem data' : dias + ' dias'})`,
+      `  Pessoas Importantes: ${pis || 'nenhuma'}`,
+      `  Total de compras: ${nCompras}`,
+      `  Total gasto: R$ ${totalGasto.toFixed(2)}`,
+      `  Última compra: ${ultimaCompra || 'nunca'}`,
+    ].join('\n');
+  }
+
+  // Monta contexto RAG: estatísticas globais + apenas clientes relevantes à query
+  function _buildContext(query) {
+    const allClientes = _clientesCache;
+    const estatisticas = _buildEstatisticas(allClientes);
+    const clientesFiltrados = _filtrarClientesRelevantes(allClientes, query || '');
+
+    let clientesTxt = '';
+    if (clientesFiltrados.length > 0) {
+      clientesTxt = `\n\nCLIENTES RELEVANTES PARA ESTA CONSULTA (${clientesFiltrados.length} de ${allClientes.length} total):\n`
+        + clientesFiltrados.map(_serializarCliente).join('\n\n');
+    } else {
+      clientesTxt = '\n\n(Consulta de visão geral — dados individuais omitidos para proteger a privacidade dos clientes. Baseie-se nas estatísticas acima.)';
+    }
+
+    return `=== DADOS DO CRM MOMENT'S PARIS ===\n\nESTATÍSTICAS GERAIS:\n${estatisticas}${clientesTxt}`;
   }
 
   // ── Envio de mensagem ─────────────────────────────────────
@@ -4625,7 +4720,7 @@ ${clientesTxt}`;
     _history.push({ role: 'user', content: text });
 
     try {
-      const context = _buildContext();
+      const context = _buildContext(text);
 
       const systemPrompt = `Você é a assistente de IA do CRM Moment's Paris, uma loja especializada em perfumes e presentes de luxo localizada no Brasil.
 
@@ -4867,7 +4962,7 @@ INSTRUÇÕES:
     _enableInput(!!proxyUrl);
   }  // ← fecha o clearChat()
 
-  return { init, onKeyInput, saveKey, send, quickAsk, onKeyDown, autoResize, clearChat };
+  return { init, onKeyInput, saveKey, send, quickAsk, onKeyDown, autoResize, clearChat, refreshContext };
 })();
 
 /* ============================================================
@@ -5011,7 +5106,7 @@ const AuthModule = (() => {
             DB_Compras.init(_sb);
             await DB_Compras.getAll(true);
             await DashboardPage.render();
-            DB.getAll(false).then(lista => { window._ia_clientes_cache = lista; });
+            DB.getAll(false).then(lista => { IAModule.refreshContext(lista); });
             IAModule.init();
             hideLoader();
           } catch(e) {
