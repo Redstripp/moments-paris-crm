@@ -4597,17 +4597,26 @@ INSTRUÇÕES:
         throw new Error('PROXY_NOT_SET');
       }
 
-      const apiResponse = await fetch(PROXY_URL + '/api/ai', {
-        method: 'POST',
-        headers: {
-    'Content-Type': 'application/json',
-    'x-proxy-token': localStorage.getItem('mp_proxy_token') || ''
-  },
-        body: JSON.stringify({
-          system:   systemPrompt,
-          messages: recentHistory
-        })
-      });
+const _controller = new AbortController();
+      const _timeoutId  = setTimeout(() => _controller.abort(), 30000);
+
+      let apiResponse;
+      try {
+        apiResponse = await fetch(PROXY_URL + '/api/ai', {
+          method: 'POST',
+          signal: _controller.signal,
+          headers: {
+            'Content-Type':  'application/json',
+            'x-proxy-token': localStorage.getItem('mp_proxy_token') || ''
+          },
+          body: JSON.stringify({
+            system:   systemPrompt,
+            messages: recentHistory
+          })
+        });
+      } finally {
+        clearTimeout(_timeoutId);
+      }
 
       let data;
       try { data = await apiResponse.json(); } catch(_) { data = {}; }
@@ -4619,16 +4628,9 @@ INSTRUÇÕES:
       }
 
       const reply = data?.reply || 'Sem resposta.';
-
-      // Remove indicador de digitação
       _removeTyping(typingId);
-
-      // Adiciona resposta da IA
       _appendMsg('assistant', reply);
-
-      // Atualiza histórico com resposta
       _history.push({ role: 'assistant', content: reply });
-
     } catch (e) {
       _removeTyping(typingId);
       console.error('[IA] Erro na chamada:', e);
@@ -4656,6 +4658,8 @@ INSTRUÇÕES:
         userMsg = '🛠️ Erro interno da Anthropic (HTTP ' + httpCode + '). Tente novamente em breve.';
       } else if (httpCode > 0) {
         userMsg = '⚠️ Erro da API HTTP ' + httpCode + (errDetail ? ': ' + errDetail : '') + '.';
+      } else if (raw.includes('AbortError') || raw.includes('aborted')) {
+        userMsg = '⏱️ Tempo limite esgotado (30s). O backend demorou para responder. Tente novamente.';
       } else if (raw.includes('Failed to fetch') || raw.includes('NetworkError') || raw.includes('Load failed')) {
         userMsg = '🌐 Requisição bloqueada (CORS ou rede). Abra o arquivo via servidor http://, não file://.';
       } else {
