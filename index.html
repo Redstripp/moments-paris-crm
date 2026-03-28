@@ -3674,11 +3674,12 @@ const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
     });
   }
 
-     function _mesVal(dataStr) {
-  if (!dataStr) return '';
-  const parts = dataStr.includes('-') ? dataStr.split('-') : dataStr.split('/');
-  return parts.length >= 2 ? (dataStr.includes('-') ? parts[1] : parts[1]) : '';
-}
+  function _mesVal(dataStr) {
+    if (!dataStr) return '';
+    const sep   = dataStr.includes('-') ? '-' : '/';
+    const parts = dataStr.split(sep);
+    return parts.length >= 2 ? parts[1] : '';
+  }
 
   function _renderPIFields() {
     const container = document.getElementById('js-pi-items');
@@ -4477,6 +4478,7 @@ const IAModule = (() => {
   // Histórico da conversa (para dar contexto à IA)
   let _history = [];
   let _isLoading = false;
+  let _retryScheduled = false; // evita múltiplos retries simultâneos
 
   // Cache privado de clientes — não exposto em window para reduzir superfície de ataque
   let _clientesCache = [];
@@ -4517,7 +4519,7 @@ const IAModule = (() => {
     // Salva o token secreto também
     const tokenVal = document.getElementById('ia-proxy-token').value.trim();
     if (tokenVal) {
-      localStorage.setItem('mp_proxy_token', tokenVal);
+      sessionStorage.setItem('mp_proxy_token', tokenVal);
     }
 
     _enableInput(true);
@@ -4701,7 +4703,7 @@ const IAModule = (() => {
     await _ask(text);
   }
 
-  async function _ask(text, _retryCount = 0) {
+  async function _ask(text) {
     if (_isLoading) return;
 
     _isLoading = true;
@@ -4764,7 +4766,7 @@ INSTRUÇÕES:
           signal: _controller.signal,
           headers: {
             'Content-Type':  'application/json',
-            'x-proxy-token': localStorage.getItem('mp_proxy_token') || ''
+            'x-proxy-token': sessionStorage.getItem('mp_proxy_token') || ''
           },
           body: JSON.stringify({
             system:   systemPrompt,
@@ -4806,24 +4808,22 @@ INSTRUÇÕES:
       } else if (httpCode === 401 || errType === 'authentication_error' || errDetail.includes('invalid') || errDetail.includes('auth')) {
         userMsg = '🔑 Chave inválida ou expirada. Gere uma nova em console.anthropic.com → API Keys.';
       } else if (httpCode === 429 || errType === 'rate_limit_error') {
-        if (_retryCount < 1) {
-          _retryCount++;
+        if (!_retryScheduled) {
+          _retryScheduled = true;
           _removeTyping(typingId);
           _isLoading = false;
-          _history.pop();
-          _appendMsg('assistant', '⏳ Muitas requisições. Tentando novamente em 2s...');
-          setTimeout(() => _ask(text), 2000);
+          _appendMsg('assistant', '⏳ Muitas requisições. Tentando novamente em 3s...');
+          setTimeout(() => { _retryScheduled = false; _ask(text); }, 3000);
           return;
         }
         userMsg = '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
       } else if (httpCode === 529 || errType === 'overloaded_error') {
-        if (_retryCount < 1) {
-          _retryCount++;
+        if (!_retryScheduled) {
+          _retryScheduled = true;
           _removeTyping(typingId);
           _isLoading = false;
-          _history.pop();
-          _appendMsg('assistant', '🔄 Servidor sobrecarregado. Tentando novamente em 2s...');
-          setTimeout(() => _ask(text), 2000);
+          _appendMsg('assistant', '🔄 Servidor sobrecarregado. Tentando novamente em 3s...');
+          setTimeout(() => { _retryScheduled = false; _ask(text); }, 3000);
           return;
         }
         userMsg = '🔄 Servidores da Anthropic sobrecarregados. Tente em instantes.';
@@ -4845,6 +4845,7 @@ INSTRUÇÕES:
       _history.pop(); // remove pergunta do histórico se falhou
     } finally {
       _isLoading = false;
+      _retryScheduled = false;
       document.getElementById('ia-send-btn').disabled = false;
       document.getElementById('ia-input').disabled = false;
     }
@@ -4906,19 +4907,56 @@ INSTRUÇÕES:
 
   // Converte markdown simples para HTML
   function _formatMarkdown(text) {
-    return text
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // 1. Escapa HTML para evitar XSS
+    let html = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // 2. Negrito e itálico
+    html = html
       .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/^### (.+)$/gm, '<strong style="color:var(--gold-light);display:block;margin:8px 0 4px;">$1</strong>')
-      .replace(/^## (.+)$/gm,  '<strong style="color:var(--gold-light);display:block;margin:8px 0 4px;">$1</strong>')
-      .replace(/^# (.+)$/gm,   '<strong style="color:var(--gold-light);display:block;margin:8px 0 4px;">$1</strong>')
-      .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-      .replace(/\n\n/g,'</p><p>')
-      .replace(/\n/g,'<br>')
-      .replace(/^/, '<p>').replace(/$/, '</p>')
-      .replace(/<p><\/p>/g, '');
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    // 3. Cabeçalhos (###, ##, #)
+    const headingStyle = 'color:var(--gold-light);display:block;margin:8px 0 4px;';
+    html = html
+      .replace(/^### (.+)$/gm, `<strong style="${headingStyle}">$1</strong>`)
+      .replace(/^## (.+)$/gm,  `<strong style="${headingStyle}">$1</strong>`)
+      .replace(/^# (.+)$/gm,   `<strong style="${headingStyle}">$1</strong>`);
+
+    // 4. Listas: converte linhas "- item" ou "• item" em <li>, depois agrupa
+    //    blocos contíguos de <li> dentro de <ul>…</ul>.
+    //    Processa linha a linha para suportar múltiplas listas no mesmo texto.
+    const lines = html.split('\n');
+    const outLines = [];
+    let inList = false;
+
+    for (const line of lines) {
+      const isItem = /^[-•] (.+)$/.test(line);
+      if (isItem) {
+        if (!inList) { outLines.push('<ul>'); inList = true; }
+        outLines.push('<li>' + line.replace(/^[-•] /, '') + '</li>');
+      } else {
+        if (inList) { outLines.push('</ul>'); inList = false; }
+        outLines.push(line);
+      }
+    }
+    if (inList) outLines.push('</ul>');
+    html = outLines.join('\n');
+
+    // 5. Parágrafos e quebras de linha (fora de blocos de lista)
+    html = html
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>')
+      .replace(/^/, '<p>')
+      .replace(/$/, '</p>')
+      .replace(/<p><\/p>/g, '')
+      // Garante que <ul> não fique embrulhada em <p>
+      .replace(/<p>(<ul>)/g, '$1')
+      .replace(/(<\/ul>)<\/p>/g, '$1');
+
+    return html;
   }
 
   // ── Utilitários de UX ─────────────────────────────────────
