@@ -4779,9 +4779,9 @@ INSTRUÇÕES:
     container.appendChild(emptyState);
 
     // Reabilita input
-    const key = localStorage.getItem(STORAGE_KEY);
-    _enableInput(key && key.startsWith('sk-ant-'));
-  }
+    const proxyUrl = localStorage.getItem('mp_proxy_url');
+    _enableInput(!!proxyUrl);
+  }  // ← fecha o clearChat()
 
   return { init, onKeyInput, saveKey, send, quickAsk, onKeyDown, autoResize, clearChat };
 })();
