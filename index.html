@@ -4543,7 +4543,7 @@ ${clientesTxt}`;
     await _ask(text);
   }
 
-  async function _ask(text) {
+  async function _ask(text, _retryCount = 0) {
     if (_isLoading) return;
 
     _isLoading = true;
@@ -4648,8 +4648,26 @@ INSTRUÇÕES:
       } else if (httpCode === 401 || errType === 'authentication_error' || errDetail.includes('invalid') || errDetail.includes('auth')) {
         userMsg = '🔑 Chave inválida ou expirada. Gere uma nova em console.anthropic.com → API Keys.';
       } else if (httpCode === 429 || errType === 'rate_limit_error') {
+        if (_retryCount < 1) {
+          _retryCount++;
+          _removeTyping(typingId);
+          _isLoading = false;
+          _history.pop();
+          _appendMsg('assistant', '⏳ Muitas requisições. Tentando novamente em 2s...');
+          setTimeout(() => _ask(text), 2000);
+          return;
+        }
         userMsg = '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
       } else if (httpCode === 529 || errType === 'overloaded_error') {
+        if (_retryCount < 1) {
+          _retryCount++;
+          _removeTyping(typingId);
+          _isLoading = false;
+          _history.pop();
+          _appendMsg('assistant', '🔄 Servidor sobrecarregado. Tentando novamente em 2s...');
+          setTimeout(() => _ask(text), 2000);
+          return;
+        }
         userMsg = '🔄 Servidores da Anthropic sobrecarregados. Tente em instantes.';
       } else if (errType === 'insufficient_quota' || errDetail.includes('credit') || errDetail.includes('billing')) {
         userMsg = '💳 Créditos da API esgotados. Acesse console.anthropic.com para recarregar.';
