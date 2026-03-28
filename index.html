@@ -2914,8 +2914,12 @@ const Helpers = (() => {
    */
   function formatDate(dateStr) {
     if (!dateStr) return '—';
-    const d = new Date(dateStr + 'T00:00:00');
+    const semAno = dateStr.startsWith('0000-');
+    const d = new Date((semAno ? '2000-' + dateStr.slice(5) : dateStr) + 'T00:00:00');
     if (isNaN(d)) return '—';
+    if (semAno) {
+      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' });
+    }
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   }
 
@@ -3573,7 +3577,10 @@ document.getElementById('f-data-dia').value = _dp[2] ? parseInt(_dp[2]) : '';
 
     // Coleta dados do formulário
     const nome     = document.getElementById('f-nome').value.trim();
-    const data     = document.getElementById('f-data').value;
+    const dia  = (document.getElementById('f-data-dia').value  || '').padStart(2, '0');
+const mes  = document.getElementById('f-data-mes').value   || '';
+const ano  = document.getElementById('f-data-ano').value   || '0000';
+const data = (dia && mes) ? `${ano}-${mes}-${dia}` : '';
     const tel      = document.getElementById('f-telefone').value.trim();
     const cidade   = document.getElementById('f-cidade').value.trim();
     const obs      = document.getElementById('f-obs').value.trim();
@@ -3589,8 +3596,8 @@ document.getElementById('f-data-dia').value = _dp[2] ? parseInt(_dp[2]) : '';
       valid = false;
     }
 
-    if (!data) {
-      _setError('err-data', 'f-data', 'Data de aniversário é obrigatória');
+    if (!dia || !mes) {
+  _setError('err-data', 'f-data-dia', 'Dia e mês são obrigatórios');
       valid = false;
     }
 
