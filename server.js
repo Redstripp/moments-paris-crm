@@ -11,7 +11,7 @@ const MODEL          = 'claude-haiku-4-5-20251001';
 const MAX_TOKENS     = 1024;
 
 app.use(cors({
-  origin: 'https://Redstripp.github.io',
+  origin: 'https://redstripp.github.io',
   methods: ['POST', 'GET'],
 }));
 app.use(express.json({ limit: '500kb' }));  // reduzido de 2mb para 500kb
