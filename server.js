@@ -9,7 +9,10 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY || 'sk-ant-SUA-CHAVE-AQUI';
 const MODEL         = 'claude-haiku-4-5-20251001';
 const MAX_TOKENS    = 1024;
 
-app.use(cors()); // permite chamadas do GitHub Pages
+app.use(cors({
+  origin: 'https://Redstripp.github.io',
+  methods: ['POST', 'GET'],
+})); // permite chamadas do GitHub Pages
 app.use(express.json({ limit: '2mb' }));
 
 // ── Health check ──────────────────────────────────────────────
