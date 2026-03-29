@@ -5,7 +5,7 @@ const { requireAuth }           = require('../middleware/auth');
 const { limiter }               = require('../middleware/rateLimiter');
 const { callAnthropic, AnthropicError } = require('../services/anthropic');
 const { buildSystemPrompt }     = require('../services/promptBuilder');
-const { trackAndCheckBudget, DAILY_TOKEN_BUDGET } = require('../services/budget');
+const { trackAndCheckBudget, getBudgetStatus, DAILY_TOKEN_BUDGET } = require('../services/budget');
 const { validateMessages }      = require('../services/validator');
 const { log }                   = require('../services/logger');
 
@@ -32,6 +32,19 @@ router.post('/', requireAuth, limiter, async (req, res) => {
     intent:   context.intent ?? null,
   });
 
+// ── Pré-verificação de budget ────────────────────────────────────────────────
+  try {
+    const preCheck = await getBudgetStatus();
+    if (preCheck.tokensUsed >= DAILY_TOKEN_BUDGET) {
+      log(req, 'warn', 'budget_pre_block', { tokensUsed: preCheck.tokensUsed });
+      return res.status(429).json({ error: 'Limite diário de uso da IA atingido. Tente novamente amanhã.' });
+    }
+  } catch (budgetPreErr) {
+    log(req, 'warn', 'budget_pre_check_failed', { message: budgetPreErr.message });
+    // Se não conseguir verificar, bloqueia por segurança
+    return res.status(503).json({ error: 'Serviço temporariamente indisponível.' });
+  }
+  
   // ── Chamada à Anthropic (com timeout e retry internos) ──────────────────────
   let result;
   try {
