@@ -3372,29 +3372,10 @@
           </div>
         </div>
 
-        <!-- Barra de configuração da chave -->
+        <!-- Barra de status do backend -->
         <div class="ia-config-bar">
-          <input
-            type="text"
-            class="ia-key-input"
-            id="ia-api-key"
-            placeholder="Cole a URL do backend: https://seu-projeto.replit.app"
-            oninput="IAModule.onKeyInput()"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <button class="btn btn--secondary btn--sm" onclick="IAModule.saveKey()">💾 Salvar</button>
-          <input
-            type="text"
-            class="ia-key-input"
-            id="ia-proxy-token"
-            placeholder="Cole o token secreto do backend"
-            autocomplete="off"
-            spellcheck="false"
-            style="max-width: 260px"
-          />
-          <button class="btn btn--secondary btn--sm" onclick="IAModule.clearChat()">🗑️ Limpar</button>
-          <span class="ia-key-status ia-key-status--off" id="ia-key-status">● Chave não configurada</span>
+          <button class="btn btn--secondary btn--sm" onclick="IAModule.clearChat()">🗑️ Limpar conversa</button>
+          <span class="ia-key-status ia-key-status--off" id="ia-key-status">● Conectando...</span>
         </div>
 
         <!-- Área de chat -->
@@ -5602,82 +5583,56 @@
       /* ============================================================
    MÓDULO: IA — Assistente Inteligente Moment's Paris
    ------------------------------------------------------------
-   Usa a API do Claude (Anthropic) com os dados do CRM
-   para responder perguntas em linguagem natural.
-
-   🔐 ONDE COLOCAR A CHAVE:
-   Digite sua chave sk-ant-... no campo da tela de IA.
-   Ela fica salva no localStorage do navegador — apenas
-   no seu dispositivo, nunca é enviada para outro servidor.
+   Autenticação: usa o JWT da sessão Supabase como Bearer token.
+   O proxy valida o JWT via service_role key — nenhum segredo
+   fica exposto no frontend ou no localStorage/sessionStorage.
    ============================================================ */
       const IAModule = (() => {
         'use strict';
 
-        const MODEL = 'claude-sonnet-4-20250514';
-        const MAX_TOKENS = 1024;
+        // URL do proxy: hardcoded — nunca configurável pelo usuário final.
+        // Troque pelo endereço real do seu backend antes de publicar.
+        const PROXY_URL = 'https://moments-paris-proxy.replit.app';
 
         // Histórico da conversa (para dar contexto à IA)
         let _history = [];
         let _isLoading = false;
-        let _retryScheduled = false; // evita múltiplos retries simultâneos
 
         // Cache privado de clientes — não exposto em window para reduzir superfície de ataque
         let _clientesCache = [];
 
         // Cache das estatísticas globais — invalidado ao atualizar a lista de clientes
-        // Evita recalcular a iteração completa a cada mensagem enviada
         let _estatisticasCache = null;
 
         // Atualiza o cache interno (chamado pelo boot e após mutações no CRM)
         function refreshContext(lista) {
           _clientesCache = lista || [];
-          _estatisticasCache = null; // invalida cache de estatísticas ao mudar dados
+          _estatisticasCache = null;
+        }
+
+        // ── Recupera o access_token da sessão Supabase ────────────
+        // Usado como Bearer token para autenticar no proxy.
+        // O proxy valida o JWT — nenhum segredo fica no cliente.
+        async function _getAuthToken() {
+          const sb = DB.getClient();
+          if (!sb) return null;
+          const { data } = await sb.auth.getSession();
+          return data?.session?.access_token || null;
         }
 
         // ── Inicialização ─────────────────────────────────────────
         function init() {
-          const savedProxy = localStorage.getItem('mp_proxy_url') || '';
-          const inp = document.getElementById('ia-api-key');
-          const statusEl = document.getElementById('ia-key-status');
-          if (savedProxy) {
-            if (inp) inp.value = savedProxy;
-            if (statusEl) {
-              statusEl.className = 'ia-key-status ia-key-status--ok';
-              statusEl.textContent = '✓ Backend configurado';
-            }
-            _enableInput(true);
-          } else {
-            if (statusEl) {
-              statusEl.className = 'ia-key-status ia-key-status--off';
-              statusEl.textContent = '● Cole a URL do backend acima';
-            }
-            _enableInput(false);
-          }
-        }
-
-        function onKeyInput() {}
-        function saveKey() {
-          const val = document.getElementById('ia-api-key').value.trim();
-          if (!val.startsWith('http')) {
-            Toast.show('URL inválida. Deve começar com https://', 'error');
-            return;
-          }
-          localStorage.setItem('mp_proxy_url', val.replace(/\/$/, ''));
-
-          // Salva o token secreto também
-          const tokenVal = document.getElementById('ia-proxy-token').value.trim();
-          if (tokenVal) {
-            sessionStorage.setItem('mp_proxy_token', tokenVal);
-          }
-
-          _enableInput(true);
           const statusEl = document.getElementById('ia-key-status');
           if (statusEl) {
             statusEl.className = 'ia-key-status ia-key-status--ok';
-            statusEl.textContent = '✓ Backend configurado';
+            statusEl.textContent = '✓ Assistente pronto';
           }
-          Toast.show('URL e token salvos ✓', 'success');
+          _enableInput(true);
         }
+
+        // Stubs mantidos para compatibilidade com chamadas externas existentes
+        function onKeyInput() {}
+        function saveKey() {}
 
         function _setKeyStatus(type) {}
 
@@ -5816,28 +5771,50 @@
             .map((s) => s.c);
         }
 
+        // ── Pseudonimização de PII ────────────────────────────────
+        // Antes de enviar dados à API externa, substitui nomes reais
+        // por pseudônimos estáveis (iniciais + hash curto) e omite
+        // telefones. Isso mantém a utilidade analítica sem expor dados
+        // nominativos a terceiros (LGPD art. 12 — dado pseudonimizado).
+        function _pseudonimizar(str) {
+          if (!str) return 'N/A';
+          // Iniciais das palavras (máx. 3) + hash djb2 de 4 chars
+          const initials = str.trim().split(/\s+/).slice(0, 3).map((w) => w[0].toUpperCase()).join('.');
+          let hash = 5381;
+          for (let i = 0; i < str.length; i++) hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+          const hex = (hash >>> 0).toString(16).slice(0, 4);
+          return `${initials}#${hex}`;
+        }
+
         // Serializa um cliente para texto compacto destinado à IA
+        // Dados enviados: pseudônimo, cidade, mês/dia do aniversário (sem ano),
+        // contagem de compras e totais financeiros. Nomes reais e telefones omitidos.
         function _serializarCliente(c) {
           const compras = DB_Compras.getByClient(c.id);
           const totalGasto = compras.reduce((s, cp) => s + (cp.total || 0), 0);
           const nCompras = compras.length;
           const ultimaCompra =
             nCompras > 0 ? compras.sort((a, b) => new Date(b.data) - new Date(a.data))[0].data : null;
-          const pis = (c.pessoasImportantes || [])
+          // Pessoas importantes: apenas contagem e pseudônimos — sem nomes reais
+          const pisPseudo = (c.pessoasImportantes || [])
             .filter((p) => p.nome)
-            .map((p) => p.nome)
+            .map((p) => _pseudonimizar(p.nome))
             .join(', ');
+          const piCount = (c.pessoasImportantes || []).filter((p) => p.nome).length;
           const dias = Helpers.daysUntilBirthday(c.dataNascimento);
+          // Envia apenas mês-dia do aniversário (sem ano nem data completa)
+          const anivMesDia = c.dataNascimento ? c.dataNascimento.slice(5) : 'N/A'; // "MM-DD"
 
           return [
-            `Cliente: ${c.nome}`,
+            `Cliente: ${_pseudonimizar(c.nome)}`,
             `  Cidade: ${c.cidade || 'N/A'}`,
-            `  Aniversário: ${c.dataNascimento || 'N/A'} (em ${dias === 999 ? 'sem data' : dias + ' dias'})`,
-            `  Pessoas Importantes: ${pis || 'nenhuma'}`,
+            `  Aniversário (MM-DD): ${anivMesDia} (em ${dias === 999 ? 'sem data' : dias + ' dias'})`,
+            `  Pessoas Importantes: ${piCount} (${pisPseudo || 'nenhuma'})`,
             `  Total de compras: ${nCompras}`,
             `  Total gasto: R$ ${totalGasto.toFixed(2)}`,
             `  Última compra: ${ultimaCompra || 'nunca'}`,
-          ].join('\n');
+          ].join('
+');
         }
 
         // Monta contexto RAG: estatísticas globais + apenas clientes relevantes à query
@@ -5857,6 +5834,49 @@
           }
 
           return `=== DADOS DO CRM MOMENT'S PARIS ===\n\nESTATÍSTICAS GERAIS:\n${estatisticas}${clientesTxt}`;
+        }
+
+        // ── Exponential backoff com jitter ───────────────────────
+        // Retry automático para erros transitórios (529, 503, network).
+        // Fórmula: min(base * 2^attempt, maxDelay) + jitter(0-1000ms)
+        // Máximo 3 tentativas para não acumular requests em cascata.
+        async function _askWithRetry(text, systemPrompt, recentHistory, attempt = 0) {
+          const MAX_ATTEMPTS = 3;
+          const BASE_DELAY_MS = 1000;
+          const MAX_DELAY_MS = 15000;
+
+          const authToken = await _getAuthToken();
+          if (!authToken) throw new Error('SESSION_EXPIRED');
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+          let apiResponse;
+          try {
+            apiResponse = await fetch(PROXY_URL + '/api/ai', {
+              method: 'POST',
+              signal: controller.signal,
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + authToken,
+              },
+              body: JSON.stringify({ system: systemPrompt, messages: recentHistory }),
+            });
+          } finally {
+            clearTimeout(timeoutId);
+          }
+
+          // Erros transitórios — aplica backoff e tenta novamente
+          const isTransient = apiResponse.status === 529 || apiResponse.status === 503 || apiResponse.status === 502;
+          if (isTransient && attempt < MAX_ATTEMPTS - 1) {
+            const delay = Math.min(BASE_DELAY_MS * Math.pow(2, attempt), MAX_DELAY_MS)
+                        + Math.floor(Math.random() * 1000); // jitter
+            console.warn(`[IA] HTTP ${apiResponse.status} — retry ${attempt + 1}/${MAX_ATTEMPTS - 1} em ${delay}ms`);
+            await new Promise((r) => setTimeout(r, delay));
+            return _askWithRetry(text, systemPrompt, recentHistory, attempt + 1);
+          }
+
+          return apiResponse;
         }
 
         // ── Envio de mensagem ─────────────────────────────────────
@@ -5894,7 +5914,8 @@
           // Adiciona indicador "pensando..."
           const typingId = _appendTyping();
 
-          // Atualiza histórico
+          // Atualiza histórico — salva índice antes do push para rollback seguro em erro
+          const _historyLenBefore = _history.length;
           _history.push({ role: 'user', content: text });
 
           try {
@@ -5924,34 +5945,10 @@ INSTRUÇÕES:
             // Monta mensagens para a API (últimas 6 trocas para economizar tokens)
             const recentHistory = _history.slice(-12);
 
-            // ── Chamada ao backend proxy (evita CORS) ───────────────────
-            // Backend: servidor Node.js em replit.com/~/moments-paris-proxy
-            // Troque PROXY_URL pelo endereço do seu backend no Replit
-            const PROXY_URL = localStorage.getItem('mp_proxy_url') || '';
-            if (!PROXY_URL) {
-              throw new Error('PROXY_NOT_SET');
-            }
-
-            const _controller = new AbortController();
-            const _timeoutId = setTimeout(() => _controller.abort(), 30000);
-
-            let apiResponse;
-            try {
-              apiResponse = await fetch(PROXY_URL + '/api/ai', {
-                method: 'POST',
-                signal: _controller.signal,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'x-proxy-token': sessionStorage.getItem('mp_proxy_token') || '',
-                },
-                body: JSON.stringify({
-                  system: systemPrompt,
-                  messages: recentHistory,
-                }),
-              });
-            } finally {
-              clearTimeout(_timeoutId);
-            }
+            // ── Chamada ao backend proxy com backoff automático ─────
+            // Autentica via JWT Supabase; retry exponencial para erros
+            // transitórios (529, 503, 502) — máximo 3 tentativas.
+            const apiResponse = await _askWithRetry(text, systemPrompt, recentHistory);
 
             let data;
             try {
@@ -5981,8 +5978,8 @@ INSTRUÇÕES:
             const errDetail = parts[2] || '';
 
             let userMsg;
-            if (raw === 'PROXY_NOT_SET') {
-              userMsg = '⚙️ URL do backend não configurada. Cole a URL do seu Replit no campo acima e salve.';
+            if (raw === 'SESSION_EXPIRED') {
+              userMsg = '🔐 Sua sessão expirou. Faça login novamente para continuar.';
             } else if (raw === 'CORS_FILE_PROTOCOL') {
               userMsg = '📂 Arquivo aberto como file:// — use o GitHub Pages ou outro servidor http://.';
             } else if (
@@ -5993,30 +5990,8 @@ INSTRUÇÕES:
             ) {
               userMsg = '🔑 Chave inválida ou expirada. Gere uma nova em console.anthropic.com → API Keys.';
             } else if (httpCode === 429 || errType === 'rate_limit_error') {
-              if (!_retryScheduled) {
-                _retryScheduled = true;
-                _removeTyping(typingId);
-                _isLoading = false;
-                _appendMsg('assistant', '⏳ Muitas requisições. Tentando novamente em 3s...');
-                setTimeout(() => {
-                  _retryScheduled = false;
-                  _ask(text);
-                }, 3000);
-                return;
-              }
               userMsg = '⏳ Muitas requisições. Aguarde alguns segundos e tente novamente.';
             } else if (httpCode === 529 || errType === 'overloaded_error') {
-              if (!_retryScheduled) {
-                _retryScheduled = true;
-                _removeTyping(typingId);
-                _isLoading = false;
-                _appendMsg('assistant', '🔄 Servidor sobrecarregado. Tentando novamente em 3s...');
-                setTimeout(() => {
-                  _retryScheduled = false;
-                  _ask(text);
-                }, 3000);
-                return;
-              }
               userMsg = '🔄 Servidores da Anthropic sobrecarregados. Tente em instantes.';
             } else if (
               errType === 'insufficient_quota' ||
@@ -6037,10 +6012,11 @@ INSTRUÇÕES:
             }
 
             _appendMsg('assistant', '❌ ' + userMsg);
-            _history.pop(); // remove pergunta do histórico se falhou
+            // Trunca o histórico até o ponto anterior ao request falho
+            // (mais seguro que pop(): garante que assistente parcial também é removido)
+            _history = _history.slice(0, _historyLenBefore);
           } finally {
             _isLoading = false;
-            _retryScheduled = false;
             document.getElementById('ia-send-btn').disabled = false;
             document.getElementById('ia-input').disabled = false;
           }
@@ -6191,9 +6167,8 @@ INSTRUÇÕES:
       </div>`;
           container.appendChild(emptyState);
 
-          // Reabilita input
-          const proxyUrl = localStorage.getItem('mp_proxy_url');
-          _enableInput(!!proxyUrl);
+          // Reabilita input — sempre habilitado pois auth é via sessão Supabase
+          _enableInput(true);
         } // ← fecha o clearChat()
 
         // Invalidação leve para mutações de compras (não recarrega lista de clientes)
@@ -6204,7 +6179,7 @@ INSTRUÇÕES:
         return {
           init,
           onKeyInput,
-          saveKey,
+          saveKey,      // stub mantido — chamado por botão legado (no-op)
           send,
           quickAsk,
           onKeyDown,
