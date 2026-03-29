@@ -6846,7 +6846,6 @@ INSTRUÇÕES:
     currentIndex = (currentIndex + 1) % PLAYLIST.length;
     loadTrack(currentIndex);
   audio.play().catch(() => {
-    // Toca automaticamente no primeiro clique/toque em qualquer lugar da página
     const startOnInteraction = () => {
       audio.play().catch(() => {});
       document.removeEventListener('click', startOnInteraction);
