@@ -68,7 +68,7 @@ const limiter = rateLimit({
         event: 'rate_limit_store_unavailable',
         message: err.message,
       }));
-      return true;
+      return false;
     }
   },
 });
