@@ -6450,19 +6450,15 @@ INSTRUÇÕES:
     transition: box-shadow 0.3s ease;
     user-select: none;
   }
-
   .mp-player:hover {
     box-shadow: 0 12px 50px rgba(0,0,0,0.80), 0 0 24px rgba(201,168,76,0.12);
   }
-
-  /* Cabeçalho com ícone e botão minimizar */
   .mp-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 14px;
   }
-
   .mp-brand {
     display: flex;
     align-items: center;
@@ -6473,14 +6469,11 @@ INSTRUÇÕES:
     text-transform: uppercase;
     color: rgba(201,168,76,0.70);
   }
-
   .mp-brand svg {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     fill: rgba(201,168,76,0.70);
     flex-shrink: 0;
   }
-
   .mp-minimize {
     background: none;
     border: none;
@@ -6491,15 +6484,8 @@ INSTRUÇÕES:
     padding: 0 2px;
     transition: color 0.2s;
   }
-
   .mp-minimize:hover { color: rgba(201,168,76,0.90); }
-
-  /* Nome da música */
-  .mp-track {
-    margin-bottom: 12px;
-    overflow: hidden;
-  }
-
+  .mp-track { margin-bottom: 12px; overflow: hidden; }
   .mp-track-name {
     font-size: 13px;
     font-weight: 600;
@@ -6508,15 +6494,12 @@ INSTRUÇÕES:
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   .mp-track-sub {
     font-size: 10px;
     color: rgba(201,168,76,0.55);
     margin-top: 2px;
     letter-spacing: 0.06em;
   }
-
-  /* Barra de progresso */
   .mp-progress-wrap {
     position: relative;
     height: 3px;
@@ -6525,16 +6508,13 @@ INSTRUÇÕES:
     margin-bottom: 10px;
     cursor: pointer;
   }
-
   .mp-progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #c9a84c, #e2c47e);
     border-radius: 99px;
     width: 0%;
-    transition: width 0.4s linear;
     pointer-events: none;
   }
-
   .mp-times {
     display: flex;
     justify-content: space-between;
@@ -6543,8 +6523,6 @@ INSTRUÇÕES:
     letter-spacing: 0.05em;
     margin-bottom: 14px;
   }
-
-  /* Controles */
   .mp-controls {
     display: flex;
     align-items: center;
@@ -6552,7 +6530,6 @@ INSTRUÇÕES:
     gap: 18px;
     margin-bottom: 14px;
   }
-
   .mp-btn {
     background: none;
     border: none;
@@ -6564,44 +6541,33 @@ INSTRUÇÕES:
     justify-content: center;
     transition: color 0.2s, transform 0.15s;
   }
-
   .mp-btn:hover { color: #e2c47e; transform: scale(1.12); }
   .mp-btn:active { transform: scale(0.95); }
-
   .mp-btn svg { width: 18px; height: 18px; fill: currentColor; }
-
   .mp-btn--play {
-    width: 44px;
-    height: 44px;
+    width: 44px; height: 44px;
     background: linear-gradient(145deg, #c9a84c, #a07830);
     border-radius: 50%;
     color: #0a0a0a;
     box-shadow: 0 4px 16px rgba(201,168,76,0.35);
     transition: color 0.2s, transform 0.15s, box-shadow 0.2s;
   }
-
   .mp-btn--play:hover {
     color: #0a0a0a;
     transform: scale(1.08);
     box-shadow: 0 6px 24px rgba(201,168,76,0.50);
   }
-
   .mp-btn--play svg { width: 20px; height: 20px; }
-
-  /* Volume */
   .mp-volume {
     display: flex;
     align-items: center;
     gap: 8px;
   }
-
   .mp-volume svg {
-    width: 13px;
-    height: 13px;
+    width: 13px; height: 13px;
     fill: rgba(201,168,76,0.45);
     flex-shrink: 0;
   }
-
   .mp-vol-slider {
     -webkit-appearance: none;
     appearance: none;
@@ -6612,21 +6578,16 @@ INSTRUÇÕES:
     outline: none;
     cursor: pointer;
   }
-
   .mp-vol-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
+    width: 12px; height: 12px;
     border-radius: 50%;
     background: #c9a84c;
     cursor: pointer;
     box-shadow: 0 0 6px rgba(201,168,76,0.50);
   }
-
-  /* Estado minimizado */
   .mp-player.minimized {
-    width: 52px;
-    height: 52px;
+    width: 52px; height: 52px;
     border-radius: 50%;
     padding: 0;
     overflow: hidden;
@@ -6634,39 +6595,16 @@ INSTRUÇÕES:
     display: flex;
     align-items: center;
     justify-content: center;
-    bottom: 28px;
-    right: 28px;
   }
-
   .mp-player.minimized .mp-inner { display: none; }
-
-  .mp-player.minimized .mp-mini-icon {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-  }
-
+  .mp-player.minimized .mp-mini-icon { display: flex !important; }
   .mp-mini-icon {
     display: none;
+    align-items: center;
+    justify-content: center;
+    width: 100%; height: 100%;
   }
-
-  .mp-mini-icon svg {
-    width: 22px;
-    height: 22px;
-    fill: #c9a84c;
-  }
-
-  /* Animação de entrada */
-  @keyframes mp-slide-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .mp-player { animation: mp-slide-in 0.4s ease forwards; }
-
-  /* Equalizer animado quando tocando */
+  .mp-mini-icon svg { width: 22px; height: 22px; fill: #c9a84c; }
   .mp-eq {
     display: flex;
     align-items: flex-end;
@@ -6676,9 +6614,7 @@ INSTRUÇÕES:
     opacity: 0;
     transition: opacity 0.3s;
   }
-
   .mp-eq.playing { opacity: 1; }
-
   .mp-eq span {
     display: block;
     width: 2px;
@@ -6686,29 +6622,27 @@ INSTRUÇÕES:
     border-radius: 1px;
     animation: eq-bar 0.8s ease infinite alternate;
   }
-
   .mp-eq span:nth-child(1) { height: 4px;  animation-delay: 0.0s; }
   .mp-eq span:nth-child(2) { height: 10px; animation-delay: 0.2s; }
   .mp-eq span:nth-child(3) { height: 6px;  animation-delay: 0.1s; }
   .mp-eq span:nth-child(4) { height: 12px; animation-delay: 0.3s; }
-
   @keyframes eq-bar {
     from { transform: scaleY(0.3); }
-    to   { transform: scaleY(1);   }
+    to   { transform: scaleY(1); }
   }
+  @keyframes mp-slide-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .mp-player { animation: mp-slide-in 0.4s ease forwards; }
 </style>
 
 <!-- ── PLAYER: HTML ─────────────────────────────────────────── -->
 <div class="mp-player" id="mpPlayer">
-
-  <!-- Ícone minimizado (só aparece quando minimizado) -->
   <div class="mp-mini-icon" onclick="mpToggleMinimize()">
     <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
   </div>
-
-  <!-- Conteúdo principal -->
   <div class="mp-inner">
-
     <div class="mp-header">
       <div class="mp-brand">
         <svg viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
@@ -6716,109 +6650,79 @@ INSTRUÇÕES:
       </div>
       <button class="mp-minimize" onclick="mpToggleMinimize()" title="Minimizar">−</button>
     </div>
-
     <div class="mp-track">
       <div style="display:flex;align-items:center;">
-        <div class="mp-track-name" id="mpTrackName">Carregando...</div>
+        <div class="mp-track-name" id="mpTrackName">Flores que Plantei</div>
         <div class="mp-eq" id="mpEq">
           <span></span><span></span><span></span><span></span>
         </div>
       </div>
-      <div class="mp-track-sub" id="mpTrackSub">♪ Playlist Moment's Paris</div>
+      <div class="mp-track-sub">♪ Playlist Moment's Paris</div>
     </div>
-
     <div class="mp-progress-wrap" id="mpProgressWrap">
       <div class="mp-progress-fill" id="mpProgressFill"></div>
     </div>
-
     <div class="mp-times">
       <span id="mpTimeCur">0:00</span>
       <span id="mpTimeTot">0:00</span>
     </div>
-
     <div class="mp-controls">
-      <!-- Anterior -->
       <button class="mp-btn" onclick="mpPrev()" title="Anterior">
         <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
       </button>
-
-      <!-- Play/Pause -->
       <button class="mp-btn mp-btn--play" id="mpPlayBtn" onclick="mpTogglePlay()" title="Play/Pause">
         <svg id="mpIconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         <svg id="mpIconPause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
       </button>
-
-      <!-- Próxima -->
       <button class="mp-btn" onclick="mpNext()" title="Próxima">
         <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14 5.09 2.14L8 14.14V9.86zM16 6h2v12h-2z"/></svg>
       </button>
     </div>
-
     <div class="mp-volume">
       <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
       <input class="mp-vol-slider" type="range" min="0" max="1" step="0.02"
              value="0.7" oninput="mpSetVolume(this.value)" id="mpVolSlider">
     </div>
-
   </div>
 </div>
 
-<!-- ── PLAYER: LÓGICA ─────────────────────────────────────── -->
+<!-- ── PLAYER: AUDIO + LÓGICA ────────────────────────────────── -->
 <audio id="mpAudio" preload="none"></audio>
-
 <script>
 (function () {
   'use strict';
 
-  // ── PLAYLIST ────────────────────────────────────────────────
-  // Para adicionar ou remover músicas, edite apenas este array.
-  const PLAYLIST = [
-    {
-      name: 'Flores que Plantei',
-      url:  'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774786083/01_FLores_Que_Plantei_d2tgjd.mp3',
-    },
-    {
-      name: 'B.O',
-      url:  'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785924/02_-_BANDA_MUSA_-_B-O_-_AUDIO_OFICIAL_2017_ris7fp.mp3',
-    },
-    {
-      name: 'Crise',
-      url:  'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785922/15_-_SONHO_DE_AMOR_-_CRISE_-_AUDIO_OFICIAL_2017_tga1de.mp3',
-    },
-    {
-      name: 'Fase Ruim',
-      url:  'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785921/07_-_BANDA_TORPEDO_-_FASE_RUIM_-_AUDIO_OFICIAL_2017_i1z809.mp3',
-    },
-    {
-      name: 'Aprende a Ser Homem',
-      url:  'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785921/08_-_SONHO_DE_AMOR_-_APRENDE_A_SER_HOMEM_-_AUDIO_OFICIAL_2017_ezq9lw.mp3',
-    },
+  var PLAYLIST = [
+    { name: 'Flores que Plantei', url: 'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774786083/01_FLores_Que_Plantei_d2tgjd.mp3' },
+    { name: 'B.O',                url: 'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785924/02_-_BANDA_MUSA_-_B-O_-_AUDIO_OFICIAL_2017_ris7fp.mp3' },
+    { name: 'Crise',              url: 'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785922/15_-_SONHO_DE_AMOR_-_CRISE_-_AUDIO_OFICIAL_2017_tga1de.mp3' },
+    { name: 'Fase Ruim',          url: 'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785921/07_-_BANDA_TORPEDO_-_FASE_RUIM_-_AUDIO_OFICIAL_2017_i1z809.mp3' },
+    { name: 'Aprende a Ser Homem',url: 'https://res.cloudinary.com/dqb4e4ttg/video/upload/v1774785921/08_-_SONHO_DE_AMOR_-_APRENDE_A_SER_HOMEM_-_AUDIO_OFICIAL_2017_ezq9lw.mp3' },
   ];
 
-  // ── ESTADO ──────────────────────────────────────────────────
-  let currentIndex = 0;
-  let isMinimized  = false;
+  var currentIndex = 0;
+  var isMinimized  = false;
+  var started      = false;
 
-  const audio       = document.getElementById('mpAudio');
-  const trackName   = document.getElementById('mpTrackName');
-  const progressFill = document.getElementById('mpProgressFill');
-  const progressWrap = document.getElementById('mpProgressWrap');
-  const timeCur     = document.getElementById('mpTimeCur');
-  const timeTot     = document.getElementById('mpTimeTot');
-  const iconPlay    = document.getElementById('mpIconPlay');
-  const iconPause   = document.getElementById('mpIconPause');
-  const eq          = document.getElementById('mpEq');
+  var audio        = document.getElementById('mpAudio');
+  var trackName    = document.getElementById('mpTrackName');
+  var progressFill = document.getElementById('mpProgressFill');
+  var progressWrap = document.getElementById('mpProgressWrap');
+  var timeCur      = document.getElementById('mpTimeCur');
+  var timeTot      = document.getElementById('mpTimeTot');
+  var iconPlay     = document.getElementById('mpIconPlay');
+  var iconPause    = document.getElementById('mpIconPause');
+  var eq           = document.getElementById('mpEq');
 
-  // ── FUNÇÕES AUXILIARES ──────────────────────────────────────
   function formatTime(s) {
-    if (isNaN(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60).toString().padStart(2, '0');
-    return `${m}:${sec}`;
+    if (isNaN(s) || s === Infinity) return '0:00';
+    var m = Math.floor(s / 60);
+    var sec = Math.floor(s % 60).toString().padStart(2, '0');
+    return m + ':' + sec;
   }
 
   function loadTrack(index) {
-    const track = PLAYLIST[index];
+    var track = PLAYLIST[index];
     audio.src = track.url;
     audio.load();
     trackName.textContent = track.name;
@@ -6833,10 +6737,9 @@ INSTRUÇÕES:
     eq.classList.toggle('playing', playing);
   }
 
-  // ── CONTROLES PÚBLICOS ──────────────────────────────────────
   window.mpTogglePlay = function () {
     if (audio.paused) {
-      audio.play().catch(() => {});
+      audio.play().catch(function(){});
     } else {
       audio.pause();
     }
@@ -6845,24 +6748,16 @@ INSTRUÇÕES:
   window.mpNext = function () {
     currentIndex = (currentIndex + 1) % PLAYLIST.length;
     loadTrack(currentIndex);
-  audio.play().catch(() => {
-    const startOnInteraction = () => {
-      audio.play().catch(() => {});
-      document.removeEventListener('click', startOnInteraction);
-      document.removeEventListener('keydown', startOnInteraction);
-    };
-    document.addEventListener('click', startOnInteraction);
-    document.addEventListener('keydown', startOnInteraction);
-  });
+    audio.play().catch(function(){});
+  };
 
   window.mpPrev = function () {
-    // Se passou mais de 3s, volta ao início; senão vai para a anterior
     if (audio.currentTime > 3) {
       audio.currentTime = 0;
     } else {
       currentIndex = (currentIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
       loadTrack(currentIndex);
-      audio.play().catch(() => {});
+      audio.play().catch(function(){});
     }
   };
 
@@ -6875,41 +6770,45 @@ INSTRUÇÕES:
     document.getElementById('mpPlayer').classList.toggle('minimized', isMinimized);
   };
 
-  // ── EVENTOS DO AUDIO ────────────────────────────────────────
-  audio.addEventListener('play',  () => setPlayingUI(true));
-  audio.addEventListener('pause', () => setPlayingUI(false));
-  audio.addEventListener('ended', () => window.mpNext());
+  audio.addEventListener('play',  function () { setPlayingUI(true); });
+  audio.addEventListener('pause', function () { setPlayingUI(false); });
+  audio.addEventListener('ended', function () { window.mpNext(); });
 
-  audio.addEventListener('timeupdate', () => {
+  audio.addEventListener('timeupdate', function () {
     if (!audio.duration) return;
-    const pct = (audio.currentTime / audio.duration) * 100;
+    var pct = (audio.currentTime / audio.duration) * 100;
     progressFill.style.width = pct + '%';
     timeCur.textContent = formatTime(audio.currentTime);
     timeTot.textContent = formatTime(audio.duration);
   });
 
-  // Clique na barra de progresso para pular
-  progressWrap.addEventListener('click', (e) => {
+  progressWrap.addEventListener('click', function (e) {
     if (!audio.duration) return;
-    const rect = progressWrap.getBoundingClientRect();
-    const pct  = (e.clientX - rect.left) / rect.width;
+    var rect = progressWrap.getBoundingClientRect();
+    var pct  = (e.clientX - rect.left) / rect.width;
     audio.currentTime = pct * audio.duration;
   });
 
-  // ── VOLUME INICIAL ──────────────────────────────────────────
-  audio.volume = parseFloat(document.getElementById('mpVolSlider').value);
+  audio.volume = 0.7;
 
-  // ── INICIALIZAÇÃO ───────────────────────────────────────────
-  // Carrega a primeira faixa. Tenta tocar automaticamente
-  // (pode ser bloqueado pelo navegador na primeira visita).
+  // Carrega a primeira faixa
   loadTrack(currentIndex);
-  audio.play().catch(() => {
-    // Navegador bloqueou autoplay — aguarda interação do usuário
-    // O botão play vai funcionar normalmente após o primeiro clique
+
+  // Toca no primeiro clique em qualquer lugar da página
+  function startOnFirstClick() {
+    if (started) return;
+    started = true;
+    audio.play().catch(function(){});
+    document.removeEventListener('click', startOnFirstClick);
+  }
+  document.addEventListener('click', startOnFirstClick);
+
+  // Tenta autoplay direto (funciona se o Edge já permitiu)
+  audio.play().catch(function () {
+    // Bloqueado pelo navegador — vai tocar no primeiro clique
   });
 
 })();
 </script>
-
-  </body>
+</body>
 </html>
