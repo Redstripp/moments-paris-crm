@@ -6701,7 +6701,7 @@ INSTRUÇÕES:
   ];
 
   var currentIndex = 0;
-  var isMinimized  = false;
+  var isMinimized  = true;
   var started      = false;
 
   var audio        = document.getElementById('mpAudio');
@@ -6790,7 +6790,9 @@ INSTRUÇÕES:
   });
 
   audio.volume = 0.7;
-
+  
+  document.getElementById('mpPlayer').classList.add('minimized');
+  
   // Carrega a primeira faixa
   loadTrack(currentIndex);
 
