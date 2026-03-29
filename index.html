@@ -5592,7 +5592,7 @@
 
         // URL do proxy: hardcoded — nunca configurável pelo usuário final.
         // Troque pelo endereço real do seu backend antes de publicar.
-        const PROXY_URL = 'https://moments-paris-proxy.onrender.com';
+        const PROXY_URL = 'https://moments-paris-proxy.replit.app';
 
         // Histórico da conversa (para dar contexto à IA)
         let _history = [];
@@ -5813,8 +5813,7 @@
             `  Total de compras: ${nCompras}`,
             `  Total gasto: R$ ${totalGasto.toFixed(2)}`,
             `  Última compra: ${ultimaCompra || 'nunca'}`,
-          ].join('
-');
+          ].join('\n');
         }
 
         // Monta contexto RAG: estatísticas globais + apenas clientes relevantes à query
