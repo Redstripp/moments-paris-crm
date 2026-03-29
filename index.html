@@ -6845,8 +6845,16 @@ INSTRUÇÕES:
   window.mpNext = function () {
     currentIndex = (currentIndex + 1) % PLAYLIST.length;
     loadTrack(currentIndex);
-    audio.play().catch(() => {});
-  };
+  audio.play().catch(() => {
+    // Toca automaticamente no primeiro clique/toque em qualquer lugar da página
+    const startOnInteraction = () => {
+      audio.play().catch(() => {});
+      document.removeEventListener('click', startOnInteraction);
+      document.removeEventListener('keydown', startOnInteraction);
+    };
+    document.addEventListener('click', startOnInteraction);
+    document.addEventListener('keydown', startOnInteraction);
+  });
 
   window.mpPrev = function () {
     // Se passou mais de 3s, volta ao início; senão vai para a anterior
