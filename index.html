@@ -6949,7 +6949,7 @@ async function recuperar(id) {
 
 // Converte do formato interno (camelCase) para o formato do Supabase (snake_case)
 const cliente = {
-  nome: raw.nome || raw.nome,
+  nome: raw.nome || '',
   data_nascimento: raw.dataNascimento || raw.data_nascimento || null,
   telefone: raw.telefone || '',
   cidade: raw.cidade || '',
