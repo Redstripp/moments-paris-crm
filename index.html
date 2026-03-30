@@ -6969,7 +6969,8 @@ const { error: errInsert } = await _sb()
     await registrar('cliente_add', `Cliente '${cliente.nome}' foi restaurado`);
     alert('✅ Cliente restaurado com sucesso!');
     await carregar();
-    await App.refresh();
+    await DB.getAll(true);
+await App.refresh();
   } catch (e) {
     alert('Erro inesperado: ' + e.message);
   }
