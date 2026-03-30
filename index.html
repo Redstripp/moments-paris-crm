@@ -6840,5 +6840,97 @@ INSTRUÇÕES:
 
 })();
 </script>
+<script>
+  /* ============================================================
+     MÓDULO: ATIVIDADES
+     Registra, exibe e remove atividades do sistema
+  ============================================================ */
+  const AtividadesPage = (() => {
+    const TABLE = 'atividades';
+
+    function _sb() {
+      return DB.getClient();
+    }
+
+    // Ícones por tipo de ação
+    const ICONES = {
+      cliente_add:    '🟢',
+      cliente_edit:   '✏️',
+      cliente_delete: '🔴',
+      compra_add:     '🛍️',
+      compra_delete:  '🗑️',
+      default:        '📋',
+    };
+
+    // Formata a data para exibição
+    function _formatarData(isoString) {
+      const d = new Date(isoString);
+      const dia  = String(d.getDate()).padStart(2, '0');
+      const mes  = String(d.getMonth() + 1).padStart(2, '0');
+      const hora = String(d.getHours()).padStart(2, '0');
+      const min  = String(d.getMinutes()).padStart(2, '0');
+      return `${dia}/${mes} às ${hora}h${min}`;
+    }
+
+    // Registra uma nova atividade no Supabase
+    async function registrar(tipo, descricao) {
+      try {
+        const icone = ICONES[tipo] || ICONES.default;
+        await _sb().from(TABLE).insert({ tipo, descricao, icone });
+      } catch (e) {
+        console.warn('[Atividades] Erro ao registrar:', e);
+      }
+    }
+
+    // Carrega e exibe as atividades na tela
+    async function carregar() {
+      const lista  = document.getElementById('atividades-lista');
+      const empty  = document.getElementById('atividades-empty');
+      if (!lista) return;
+
+      const { data, error } = await _sb()
+        .from(TABLE)
+        .select('*')
+        .order('criado_em', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        if (empty) empty.style.display = 'flex';
+        return;
+      }
+
+      if (empty) empty.style.display = 'none';
+
+      lista.innerHTML = data.map((item) => `
+        <div style="
+          display:flex; align-items:center; gap:14px;
+          padding:14px 20px; border-bottom:1px solid var(--border-subtle);
+        ">
+          <span style="font-size:1.4rem; flex-shrink:0">${item.icone}</span>
+          <span style="flex:1; color:var(--text-primary); font-size:.9rem">${item.descricao}</span>
+          <span style="color:var(--text-muted); font-size:.78rem; white-space:nowrap">${_formatarData(item.criado_em)}</span>
+          <button onclick="AtividadesPage.remover('${item.id}')"
+            style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:4px 6px;border-radius:4px"
+            title="Remover">✕</button>
+        </div>
+      `).join('');
+    }
+
+    // Remove uma atividade individual
+    async function remover(id) {
+      await _sb().from(TABLE).delete().eq('id', id);
+      await carregar();
+    }
+
+    // Limpa todas as atividades
+    async function limparTodas() {
+      if (!confirm('Tem certeza que deseja apagar todo o histórico?')) return;
+      await _sb().from(TABLE).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await carregar();
+    }
+
+    return { registrar, carregar, remover, limparTodas };
+  })();
+</script>
+    
 </body>
 </html>
