@@ -4922,7 +4922,7 @@
           close();
           try {
             await DB.remove(id);
-            await AtividadesPage.registrar('cliente_delete', `Cliente foi removido`);
+            await AtividadesPage.registrar('cliente_delete', `Cliente '${clienteParaDeletar.nome}' foi removido`, clienteParaDeletar);
             await App.refresh();
             DB.getAll(false).then((lista) => {
               IAModule.refreshContext(lista);
