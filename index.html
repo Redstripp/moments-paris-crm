@@ -6945,10 +6945,21 @@ async function recuperar(id) {
       return;
     }
 
-    const cliente = data.dados_extras;
-    const { error: errInsert } = await _sb()
-      .from('clientes')
-      .insert(cliente);
+    const raw = data.dados_extras;
+
+// Converte do formato interno (camelCase) para o formato do Supabase (snake_case)
+const cliente = {
+  nome: raw.nome || raw.nome,
+  data_nascimento: raw.dataNascimento || raw.data_nascimento || null,
+  telefone: raw.telefone || '',
+  cidade: raw.cidade || '',
+  observacoes: raw.observacoes || '',
+  pessoas_importantes: raw.pessoasImportantes || raw.pessoas_importantes || [],
+};
+
+const { error: errInsert } = await _sb()
+  .from('clientes')
+  .insert(cliente);
 
     if (errInsert) {
       alert('Erro ao restaurar cliente: ' + errInsert.message);
