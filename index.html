@@ -3442,6 +3442,28 @@
         </div>
       </div>
     </section>
+    <section class="page" id="page-atividades" aria-label="Registro de Atividades">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Registro de Atividades</h1>
+      <p class="page-subtitle">Histórico de ações realizadas no sistema (últimos 7 dias)</p>
+    </div>
+    <button class="btn btn--ghost" onclick="AtividadesPage.limparTodas()" style="color:var(--danger);border-color:var(--danger)">
+      Limpar tudo
+    </button>
+  </div>
+
+  <div class="card" style="padding: 0; overflow: hidden;">
+    <div id="atividades-lista" style="min-height: 200px;">
+      <div class="table-empty" id="atividades-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:0.3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p>Nenhuma atividade registrada ainda.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
     <!-- ============================================================
      MODAL: CONFIRMAR EXCLUSÃO DE COMPRA
