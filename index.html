@@ -6907,18 +6907,28 @@ INSTRUÇÕES:
       if (empty) empty.style.display = 'none';
 
       lista.innerHTML = data.map((item) => `
-        <div style="
-          display:flex; align-items:center; gap:14px;
-          padding:14px 20px; border-bottom:1px solid var(--border-subtle);
-        ">
-          <span style="font-size:1.4rem; flex-shrink:0">${item.icone}</span>
-          <span style="flex:1; color:var(--text-primary); font-size:.9rem">${item.descricao}</span>
-          <span style="color:var(--text-muted); font-size:.78rem; white-space:nowrap">${_formatarData(item.criado_em)}</span>
-          <button onclick="AtividadesPage.remover('${item.id}')"
-            style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:4px 6px;border-radius:4px"
-            title="Remover">✕</button>
-        </div>
-      `).join('');
+  <div style="
+    display:flex; align-items:center; gap:14px;
+    padding:14px 20px; border-bottom:1px solid var(--border-subtle);
+  ">
+    <span style="font-size:1.4rem; flex-shrink:0">${item.icone}</span>
+    <span style="flex:1; color:var(--text-primary); font-size:.9rem">
+      ${item.descricao}
+      <span style="display:block; font-size:.75rem; color:var(--text-muted); margin-top:2px">
+        👤 ${item.usuario || 'desconhecido'}
+      </span>
+    </span>
+    <span style="color:var(--text-muted); font-size:.78rem; white-space:nowrap">${_formatarData(item.criado_em)}</span>
+    ${item.tipo === 'cliente_delete' && item.dados_extras ? `
+      <button onclick="AtividadesPage.recuperar('${item.id}')"
+        style="background:var(--accent);border:none;cursor:pointer;color:white;font-size:.75rem;padding:4px 10px;border-radius:4px;white-space:nowrap">
+        ↩ Recuperar
+      </button>` : ''}
+    <button onclick="AtividadesPage.remover('${item.id}')"
+      style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:4px 6px;border-radius:4px"
+      title="Remover">✕</button>
+  </div>
+`).join('');
     }
 
     // Remove uma atividade individual
