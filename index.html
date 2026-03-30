@@ -4688,8 +4688,8 @@
           const nome = document.getElementById('f-nome').value.trim();
           const dia = (document.getElementById('f-data-dia').value || '').padStart(2, '0');
           const mes = document.getElementById('f-data-mes').value || '';
-          const ano = document.getElementById('f-data-ano').value || '0000';
-          const data = dia && mes ? `${ano}-${mes}-${dia}` : '';
+          const ano = document.getElementById('f-data-ano').value || null;
+          const data = dia && mes && ano ? `${ano}-${mes}-${dia}` : null;
           const tel = document.getElementById('f-telefone').value.trim();
           const cidade = document.getElementById('f-cidade').value.trim();
           const obs = document.getElementById('f-obs').value.trim();
