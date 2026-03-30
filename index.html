@@ -6877,14 +6877,16 @@ INSTRUÇÕES:
     }
 
     // Registra uma nova atividade no Supabase
-    async function registrar(tipo, descricao) {
-      try {
-        const icone = ICONES[tipo] || ICONES.default;
-        await _sb().from(TABLE).insert({ tipo, descricao, icone });
-      } catch (e) {
-        console.warn('[Atividades] Erro ao registrar:', e);
-      }
-    }
+    async function registrar(tipo, descricao, dadosExtras = null) {
+  try {
+    const icone = ICONES[tipo] || ICONES.default;
+    const { data: { session } } = await _sb().auth.getSession();
+    const usuario = session?.user?.email || 'desconhecido';
+    await _sb().from(TABLE).insert({ tipo, descricao, icone, usuario, dados_extras: dadosExtras });
+  } catch (e) {
+    console.warn('[Atividades] Erro ao registrar:', e);
+  }
+}
 
     // Carrega e exibe as atividades na tela
     async function carregar() {
