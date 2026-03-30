@@ -4736,9 +4736,11 @@
           try {
             if (_editId !== null) {
               await DB.update(_editId, payload);
+              await AtividadesPage.registrar('cliente_edit', `Cliente '${payload.nome}' foi editado`);
               Toast.show('Cliente atualizado com sucesso!', 'success');
             } else {
               await DB.insert(payload);
+              await AtividadesPage.registrar('cliente_add', `Cliente '${payload.nome}' foi adicionado`);
               Toast.show('Cliente adicionado com sucesso!', 'success');
             }
             close();
@@ -4919,6 +4921,7 @@
           close();
           try {
             await DB.remove(id);
+            await AtividadesPage.registrar('cliente_delete', `Cliente foi removido`);
             await App.refresh();
             DB.getAll(false).then((lista) => {
               IAModule.refreshContext(lista);
