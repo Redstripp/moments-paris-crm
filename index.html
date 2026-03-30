@@ -6978,10 +6978,21 @@ async function recuperar(id) {
 
     // Limpa todas as atividades
     async function limparTodas() {
-      if (!confirm('Tem certeza que deseja apagar todo o histórico?')) return;
-      await _sb().from(TABLE).delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      await carregar();
-    }
+  const SENHA_CORRETA = '3989870';
+
+  const senha = prompt('Digite a senha para limpar o histórico:');
+  if (senha === null) return;
+
+  if (senha !== SENHA_CORRETA) {
+    alert('❌ Senha incorreta. Operação cancelada.');
+    return;
+  }
+
+  if (!confirm('Tem certeza? Isso apagará TODO o histórico permanentemente.')) return;
+
+  await _sb().from(TABLE).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+  await carregar();
+}
 
     return { registrar, carregar, remover, recuperar, limparTodas };
   })();
