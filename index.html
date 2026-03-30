@@ -6931,6 +6931,45 @@ INSTRUÇÕES:
 `).join('');
     }
 
+async function recuperar(id) {
+  try {
+    const { data, error } = await _sb()
+      .from(TABLE)
+      .select('dados_extras')
+      .eq('id', id)
+      .single();
+
+    if (error || !data?.dados_extras) {
+      alert('Não foi possível recuperar os dados do cliente.');
+      return;
+    }
+
+    const cliente = data.dados_extras;
+    const { error: errInsert } = await _sb()
+      .from('clientes')
+      .insert(cliente);
+
+    if (errInsert) {
+      alert('Erro ao restaurar cliente: ' + errInsert.message);
+      return;
+    }
+
+    await registrar('cliente_add', `Cliente '${cliente.nome}' foi restaurado`);
+    alert('✅ Cliente restaurado com sucesso!');
+    await carregar();
+    await App.refresh();
+  } catch (e) {
+    alert('Erro inesperado: ' + e.message);
+  }
+}
+    > 💡 **O que essa função faz, passo a passo:**
+> 1. Busca os dados salvos na atividade de exclusão
+> 2. Pega o objeto do cliente que estava em `dados_extras`
+> 3. Insere esse cliente de volta na tabela `clientes`
+> 4. Registra uma nova atividade dizendo que o cliente foi restaurado
+> 5. Atualiza a tela
+
+    
     // Remove uma atividade individual
     async function remover(id) {
       await _sb().from(TABLE).delete().eq('id', id);
@@ -6944,7 +6983,7 @@ INSTRUÇÕES:
       await carregar();
     }
 
-    return { registrar, carregar, remover, limparTodas };
+    return { registrar, carregar, remover, recuperar, limparTodas };
   })();
 </script>
     
