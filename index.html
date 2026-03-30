@@ -4917,21 +4917,22 @@
         }
 
         async function confirm() {
-          if (_pendingId === null) return;
-          const id = _pendingId;
-          close();
-          try {
-            await DB.remove(id);
-            await AtividadesPage.registrar('cliente_delete', `Cliente '${c.nome}' foi removido`, c);
-            await App.refresh();
-            DB.getAll(false).then((lista) => {
-              IAModule.refreshContext(lista);
-            }); // atualiza cache da IA
-            Toast.show('Cliente excluído com sucesso.', 'info');
-          } catch (e) {
-            Toast.show(e.message || 'Erro ao excluir cliente.', 'error');
-          }
-        }
+  if (_pendingId === null) return;
+  const id = _pendingId;
+  const c = DB.getById(id);
+  close();
+  try {
+    await DB.remove(id);
+    await AtividadesPage.registrar('cliente_delete', `Cliente '${c ? c.nome : 'desconhecido'}' foi removido`, c);
+    await App.refresh();
+    DB.getAll(false).then((lista) => {
+      IAModule.refreshContext(lista);
+    });
+    Toast.show('Cliente excluído com sucesso.', 'info');
+  } catch (e) {
+    Toast.show(e.message || 'Erro ao excluir cliente.', 'error');
+  }
+}
 
         return { open, close, confirm };
       })();
