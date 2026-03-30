@@ -3984,7 +3984,7 @@
          */
         function formatDate(dateStr) {
           if (!dateStr) return '—';
-          const semAno = dateStr.startsWith('0000-');
+          const semAno = dateStr.startsWith('0001-');
           const d = new Date((semAno ? '2000-' + dateStr.slice(5) : dateStr) + 'T00:00:00');
           if (isNaN(d)) return '—';
           if (semAno) {
@@ -4689,7 +4689,7 @@
           const dia = (document.getElementById('f-data-dia').value || '').padStart(2, '0');
           const mes = document.getElementById('f-data-mes').value || '';
           const ano = document.getElementById('f-data-ano').value || null;
-          const data = dia && mes && ano ? `${ano}-${mes}-${dia}` : null;
+          const data = dia && mes ? (ano ? `${ano}-${mes}-${dia}` : `0001-${mes}-${dia}`) : null;
           const tel = document.getElementById('f-telefone').value.trim();
           const cidade = document.getElementById('f-cidade').value.trim();
           const obs = document.getElementById('f-obs').value.trim();
