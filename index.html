@@ -6998,8 +6998,10 @@ await App.refresh();
   if (!confirm('Tem certeza? Isso apagará TODO o histórico permanentemente.')) return;
 
   await _sb().from(TABLE).delete().neq('id', '00000000-0000-0000-0000-000000000000');
-  await DB.getAll(true);
-  await carregar();
+const lista = document.getElementById('atividades-lista');
+const empty = document.getElementById('atividades-empty');
+if (lista) lista.innerHTML = '';
+if (empty) empty.style.display = 'flex';
 }
 
     return { registrar, carregar, remover, recuperar, limparTodas };
