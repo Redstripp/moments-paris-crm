@@ -613,6 +613,14 @@
         color: var(--success);
       }
 
+      .kpi-card--info .kpi-card__icon {
+        background: var(--info-bg);
+        color: var(--info);
+      }
+      .kpi-card--info .kpi-card__number {
+        color: var(--info);
+      }
+
       .kpi-card__number {
         font-family: 'Cormorant Garamond', serif;
         font-size: 40px;
@@ -2830,6 +2838,16 @@
           </div>
         </div>
 
+        <div class="kpi-card kpi-card--info">
+            <div class="kpi-card__icon">
+              <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 000-2h-3z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="kpi-card__number" id="js-kpi-pedidos-dia">0</div>
+            <div class="kpi-card__label">Pedidos Hoje (em aberto)</div>
+          </div>
+
         <div class="dashboard__panels">
           <div class="panel">
             <div class="panel__header">
@@ -4358,6 +4376,21 @@ if (page === 'pedidos') await PedidosPage.render();
           document.getElementById('js-kpi-hoje').textContent = hoje;
           document.getElementById('js-kpi-7').textContent = prox7;
           document.getElementById('js-kpi-30').textContent = prox30;
+
+          // KPI: Pedidos de hoje (não entregues)
+          try {
+            const hoje_inicio = new Date();
+            hoje_inicio.setHours(0, 0, 0, 0);
+            const hoje_fim = new Date();
+            hoje_fim.setHours(23, 59, 59, 999);
+            const { data: pedidosHoje } = await DB.getClient()
+              .from('pedidos')
+              .select('status')
+              .gte('criado_em', hoje_inicio.toISOString())
+              .lte('criado_em', hoje_fim.toISOString())
+              .neq('status', 'entregue');
+            document.getElementById('js-kpi-pedidos-dia').textContent = pedidosHoje?.length || 0;
+          } catch (_) { /* silencioso */ }
 
           // Badges de navegação
           document.getElementById('js-badge-clientes').textContent = clients.length;
