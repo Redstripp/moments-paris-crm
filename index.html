@@ -4512,6 +4512,47 @@ if (page === 'pedidos') await PedidosPage.render();
       /* ============================================================
          MÓDULO: GRÁFICO DO DASHBOARD
          ============================================================ */
+      const DashTopProdutos = (() => {
+  async function load() {
+    const container = document.getElementById('js-top-produtos');
+    if (!container) return;
+    container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Carregando...</p>';
+    try {
+      const { data, error } = await window.supabase
+        .from('produtos_compra')
+        .select('produto_nome, quantidade');
+      if (error) throw error;
+      const totais = {};
+      (data || []).forEach(item => {
+        const nome = item.produto_nome || 'Sem nome';
+        totais[nome] = (totais[nome] || 0) + (item.quantidade || 1);
+      });
+      const top = Object.entries(totais)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      if (top.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Nenhum dado encontrado.</p>';
+        return;
+      }
+      const max = top[0][1];
+      container.innerHTML = top.map(([nome, qtd], i) => `
+        <div style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;color:var(--text-primary);font-weight:500;">${i + 1}. ${nome}</span>
+            <span style="font-size:13px;color:var(--gold);font-weight:700;">${qtd} un.</span>
+          </div>
+          <div style="background:var(--bg-overlay);border-radius:999px;height:6px;overflow:hidden;">
+            <div style="height:6px;border-radius:999px;background:var(--gold);width:${Math.round((qtd/max)*100)}%;transition:width .6s ease;"></div>
+          </div>
+        </div>
+      `).join('');
+    } catch (e) {
+      container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Erro ao carregar.</p>';
+    }
+  }
+  return { load };
+})();
+      
       const DashChart = (() => {
         let _chart = null;
         let _mode = 'valor';
