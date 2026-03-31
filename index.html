@@ -9,6 +9,7 @@
      SDK do Supabase (carregado antes de tudo)
      ============================================================ -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
@@ -1875,6 +1876,9 @@
         .dashboard__panels {
           grid-template-columns: 1fr;
         }
+        .dash-analytics-grid {
+          grid-template-columns: 1fr !important;
+        }
       }
 
       @media (max-width: 860px) {
@@ -1920,6 +1924,9 @@
         }
         .dashboard__panels {
           grid-template-columns: 1fr;
+        }
+        .dash-analytics-grid {
+          grid-template-columns: 1fr !important;
         }
       }
 
@@ -2848,6 +2855,48 @@
             <div class="kpi-card__label">Pedidos Hoje (em aberto)</div>
           </div>
 
+        <!-- GRÁFICO + TOP 5 PRODUTOS -->
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;margin-bottom:24px;" class="dash-analytics-grid">
+
+          <!-- Gráfico de linha -->
+          <div class="panel" style="padding:0;overflow:hidden;">
+            <div class="panel__header" style="padding:16px 20px 12px;">
+              <span class="panel__icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/>
+                </svg>
+              </span>
+              <h3>Vendas — Últimos 6 Meses</h3>
+              <div style="margin-left:auto;display:flex;gap:6px;" id="js-chart-btns">
+                <button onclick="DashChart.setMode('valor')" id="js-chart-btn-valor" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border-default);background:var(--gold);color:var(--text-inverse);cursor:pointer;font-weight:600;">R$</button>
+                <button onclick="DashChart.setMode('pedidos')" id="js-chart-btn-pedidos" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border-default);background:var(--bg-overlay);color:var(--text-secondary);cursor:pointer;">Pedidos</button>
+                <button onclick="DashChart.setMode('clientes')" id="js-chart-btn-clientes" style="font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border-default);background:var(--bg-overlay);color:var(--text-secondary);cursor:pointer;">Clientes</button>
+              </div>
+            </div>
+            <div style="padding:8px 20px 20px;position:relative;height:220px;">
+              <canvas id="js-dash-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Top 5 Produtos -->
+          <div class="panel">
+            <div class="panel__header">
+              <span class="panel__icon" aria-hidden="true">
+                <svg width="15" height="15" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                </svg>
+              </span>
+              <h3>Top 5 Produtos</h3>
+              <span class="badge badge--7dias" style="font-size:8.5px;margin-left:auto;">por pedidos</span>
+            </div>
+            <div class="panel__body" id="js-top-produtos" aria-live="polite">
+              <div class="panel__empty">Carregando...</div>
+            </div>
+          </div>
+
+        </div>
+        <!-- FIM GRÁFICO + TOP 5 -->
+        
         <div class="dashboard__panels">
           <div class="panel">
             <div class="panel__header">
