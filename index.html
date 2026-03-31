@@ -4269,6 +4269,8 @@
           if (page === 'aniversarios') await AniversariosPage.render();
           if (page === 'compras') await ComprasPage.render();
           if (page === 'atividades') await AtividadesPage.carregar();
+if (page === 'produtos') await ProdutosPage.render();
+if (page === 'pedidos') await PedidosPage.render();
 
           // Fecha sidebar no mobile
           if (window.innerWidth <= 860) {
@@ -6954,10 +6956,231 @@ INSTRUÇÕES:
 })();
 </script>
 <script>
+/* ============================================================
+   MÓDULO: PRODUTOS (Admin)
+   ============================================================ */
+const ProdutosPage = (() => {
+  let _editId = null;
+
+  function _sb() { return DB.getClient(); }
+
+  async function render() {
+    const tbody = document.getElementById('js-produtos-tbody');
+    const { data, error } = await _sb().from('produtos').select('*').order('criado_em', { ascending: false });
+
+    if (error) { tbody.innerHTML = '<tr><td colspan="4" class="table-empty">Erro ao carregar produtos.</td></tr>'; return; }
+
+    const badge = document.getElementById('js-badge-produtos');
+    if (badge) badge.textContent = data?.length || 0;
+    document.getElementById('js-produtos-count').textContent = `${data?.length || 0} produto(s) cadastrado(s)`;
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="table-empty">Nenhum produto cadastrado ainda.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.map(p => `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px;">
+            ${p.imagem_url ? `<img src="${p.imagem_url}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--border-subtle)" onerror="this.style.display='none'"/>` : '<div style="width:40px;height:40px;background:var(--bg-overlay);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;">🛍️</div>'}
+            <div>
+              <div style="font-weight:500;font-size:13px">${Helpers.escapeHtml(p.nome)}</div>
+              ${p.descricao ? `<div style="font-size:11px;color:var(--text-muted)">${Helpers.escapeHtml(p.descricao)}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold)">
+          R$ ${Number(p.preco).toLocaleString('pt-BR', {minimumFractionDigits:2})}
+        </td>
+        <td>
+          <span style="font-size:12px;padding:3px 10px;border-radius:999px;${p.disponivel ? 'background:rgba(39,174,96,0.1);color:var(--success);border:1px solid rgba(39,174,96,0.2)' : 'background:rgba(192,57,43,0.1);color:var(--danger);border:1px solid rgba(192,57,43,0.2)'}">
+            ${p.disponivel ? '✅ Disponível' : '❌ Indisponível'}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex;gap:4px;justify-content:center;">
+            <button class="btn-icon btn-icon--edit" onclick="ProdutoModal.abrir('${p.id}')" title="Editar">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+            </button>
+            <button class="btn-icon btn-icon--delete" onclick="ProdutosPage.excluir('${p.id}')" title="Excluir">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function excluir(id) {
+    if (!confirm('Excluir este produto?')) return;
+    await _sb().from('produtos').delete().eq('id', id);
+    await render();
+    Toast.show('Produto excluído.', 'info');
+  }
+
+  return { render, excluir };
+})();
+
+const ProdutoModal = (() => {
+  let _editId = null;
+  function _sb() { return DB.getClient(); }
+
+  async function abrir(id = null) {
+    _editId = id;
+    document.getElementById('modal-produto-title').textContent = id ? 'Editar Produto' : 'Novo Produto';
+    document.getElementById('err-fp-nome').textContent = '';
+    document.getElementById('err-fp-preco').textContent = '';
+
+    if (id) {
+      const { data } = await _sb().from('produtos').select('*').eq('id', id).single();
+      if (data) {
+        document.getElementById('fp-nome').value = data.nome;
+        document.getElementById('fp-preco').value = data.preco;
+        document.getElementById('fp-imagem').value = data.imagem_url || '';
+        document.getElementById('fp-desc').value = data.descricao || '';
+        document.getElementById('fp-disponivel').value = String(data.disponivel);
+      }
+    } else {
+      document.getElementById('fp-nome').value = '';
+      document.getElementById('fp-preco').value = '';
+      document.getElementById('fp-imagem').value = '';
+      document.getElementById('fp-desc').value = '';
+      document.getElementById('fp-disponivel').value = 'true';
+    }
+    document.getElementById('modal-produto').classList.add('is-open');
+  }
+
+  function fechar() {
+    document.getElementById('modal-produto').classList.remove('is-open');
+  }
+
+  async function salvar() {
+    const nome = document.getElementById('fp-nome').value.trim();
+    const preco = parseFloat(document.getElementById('fp-preco').value);
+    const imagem_url = document.getElementById('fp-imagem').value.trim();
+    const descricao = document.getElementById('fp-desc').value.trim();
+    const disponivel = document.getElementById('fp-disponivel').value === 'true';
+
+    document.getElementById('err-fp-nome').textContent = '';
+    document.getElementById('err-fp-preco').textContent = '';
+
+    let ok = true;
+    if (!nome) { document.getElementById('err-fp-nome').textContent = 'Nome é obrigatório'; ok = false; }
+    if (!preco || preco <= 0) { document.getElementById('err-fp-preco').textContent = 'Preço inválido'; ok = false; }
+    if (!ok) return;
+
+    const btn = document.getElementById('js-btn-save-produto');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Salvando...';
+
+    const payload = { nome, preco, imagem_url: imagem_url || null, descricao: descricao || null, disponivel };
+
+    if (_editId) {
+      await _sb().from('produtos').update(payload).eq('id', _editId);
+      Toast.show('Produto atualizado!', 'success');
+    } else {
+      await _sb().from('produtos').insert(payload);
+      Toast.show('Produto adicionado!', 'success');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = 'Salvar Produto';
+    fechar();
+    await ProdutosPage.render();
+  }
+
+  return { abrir, fechar, salvar };
+})();
+
+/* ============================================================
+   MÓDULO: PEDIDOS (Admin)
+   ============================================================ */
+const PedidosPage = (() => {
+  function _sb() { return DB.getClient(); }
+
+  async function render() {
+    const container = document.getElementById('js-pedidos-list');
+    const badge = document.getElementById('js-badge-pedidos');
+
+    // Busca pedidos dos últimos 7 dias
+    const seteDiasAtras = new Date();
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+
+    const { data, error } = await _sb()
+      .from('pedidos')
+      .select('*')
+      .gte('criado_em', seteDiasAtras.toISOString())
+      .order('criado_em', { ascending: false });
+
+    if (error) { container.innerHTML = '<div class="table-empty">Erro ao carregar pedidos.</div>'; return; }
+
+    const pendentes = (data || []).filter(p => p.status === 'pendente').length;
+    if (badge) badge.textContent = pendentes;
+    document.getElementById('js-pedidos-count').textContent =
+      `${data?.length || 0} pedido(s) nos últimos 7 dias · ${pendentes} pendente(s)`;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = '<div class="table-empty">Nenhum pedido nos últimos 7 dias.</div>';
+      return;
+    }
+
+    container.innerHTML = data.map(p => {
+      const itens = Array.isArray(p.itens) ? p.itens : [];
+      const data_fmt = new Date(p.criado_em).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const statusColor = p.status === 'entregue' ? 'var(--success)' : p.status === 'separado' ? 'var(--gold)' : 'var(--warning)';
+      const statusLabel = p.status === 'entregue' ? '✅ Entregue' : p.status === 'separado' ? '📦 Separado' : '⏳ Pendente';
+
+      return `
+        <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;">
+          <div style="padding:16px 20px;background:var(--bg-raised);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:13px">${Helpers.escapeHtml(p.cliente_nome)}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">📱 ${Helpers.escapeHtml(p.cliente_telefone)} · 🕐 ${data_fmt}</div>
+            </div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)">
+              R$ ${Number(p.total).toLocaleString('pt-BR', {minimumFractionDigits:2})}
+            </div>
+            <span style="font-size:11px;padding:4px 12px;border-radius:999px;border:1px solid;color:${statusColor};border-color:${statusColor};background:${statusColor}22">
+              ${statusLabel}
+            </span>
+          </div>
+          <div style="padding:14px 20px;">
+            ${itens.map(i => `
+              <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border-subtle);font-size:12.5px;">
+                <span>${Helpers.escapeHtml(i.nome)} × ${i.qty}</span>
+                <span style="color:var(--gold)">R$ ${Number(i.subtotal).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+              </div>`).join('')}
+            <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+              ${p.status !== 'separado' && p.status !== 'entregue' ? `
+                <button onclick="PedidosPage.atualizarStatus('${p.id}', 'separado')"
+                  style="padding:7px 14px;border-radius:6px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+                  📦 Pedido Separado
+                </button>` : ''}
+              ${p.status !== 'entregue' ? `
+                <button onclick="PedidosPage.atualizarStatus('${p.id}', 'entregue')"
+                  style="padding:7px 14px;border-radius:6px;border:1px solid var(--success);background:transparent;color:var(--success);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+                  ✅ Pedido Entregue
+                </button>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function atualizarStatus(id, status) {
+    await _sb().from('pedidos').update({ status }).eq('id', id);
+    Toast.show(status === 'entregue' ? 'Pedido marcado como entregue!' : 'Pedido marcado como separado!', 'success');
+    await render();
+  }
+
+  return { render, atualizarStatus };
+})();
+  
   /* ============================================================
      MÓDULO: ATIVIDADES
      Registra, exibe e remove atividades do sistema
   ============================================================ */
+  
   const AtividadesPage = (() => {
     const TABLE = 'atividades';
 
