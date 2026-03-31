@@ -592,7 +592,22 @@ const Auth = (() => {
     if (senha.length < 6) { document.getElementById('errCadSenha').textContent = 'Mínimo 6 caracteres'; ok = false; }
     if (!ok) return;
 
-    const { error } = await _sb.from('clientes_loja').insert({ nome, telefone: tel, endereco: end, senha });
+    const empresa = document.getElementById('cadEmpresa').value.trim();
+const cpf = document.getElementById('cadCpf').value.trim();
+
+if (cpf && cpf.length !== 3) {
+  document.getElementById('errCadCpf').textContent = 'Digite exatamente 3 dígitos';
+  return;
+}
+
+const { error } = await _sb.from('clientes_loja').insert({ 
+  nome, 
+  telefone: tel, 
+  endereco: end, 
+  senha,
+  empresa: empresa || null,
+  cpf_iniciais: cpf || null
+});
     if (error) {
       if (error.message.includes('unique')) showMsg('Este telefone já está cadastrado.');
       else showMsg('Erro ao criar conta: ' + error.message);
@@ -746,6 +761,8 @@ const Pedido = (() => {
       </div>
       <div style="margin-top:16px;padding:12px;background:var(--bg-raised);border-radius:8px;font-size:12px;color:var(--text-secondary)">
         📍 Entrega em: <strong style="color:var(--text-primary)">${_cliente.endereco}</strong>
+      ${_cliente.empresa ? `<br>🏢 Empresa: <strong style="color:var(--text-primary)">${_cliente.empresa}</strong>` : ''}
+      ${_cliente.cpf_iniciais ? `<br>🪪 CPF (iniciais): <strong style="color:var(--text-primary)">${_cliente.cpf_iniciais}</strong>` : ''}
       </div>`;
     document.getElementById('modalConfirm').classList.add('is-open');
   }
