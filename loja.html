@@ -533,7 +533,14 @@
 const SUPABASE_URL = 'https://aacgzwbypqwcyiotnalj.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_QxVdjp_ZTVDs5qw5kBrr5w_BakfSbR3';
 
-const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+    storage: window.localStorage,
+  }
+});
 
 let _cliente = null;
 let _carrinho = [];
