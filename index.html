@@ -3461,6 +3461,46 @@
         </div>
       </div>
     </section>
+    <!-- ========== PAGE: PRODUTOS ========== -->
+<section class="page" id="page-produtos" aria-label="Produtos">
+  <div class="page-header">
+    <div class="page-header__left">
+      <h2 class="page-header__title">Produtos</h2>
+      <p class="page-header__subtitle" id="js-produtos-count">Carregando...</p>
+    </div>
+    <button class="btn btn--primary" onclick="ProdutoModal.abrir()">
+      + Novo Produto
+    </button>
+  </div>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Preço</th>
+          <th>Disponível</th>
+          <th style="text-align:center">Ações</th>
+        </tr>
+      </thead>
+      <tbody id="js-produtos-tbody">
+        <tr><td colspan="4" class="table-empty">Carregando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ========== PAGE: PEDIDOS ========== -->
+<section class="page" id="page-pedidos" aria-label="Pedidos">
+  <div class="page-header">
+    <div class="page-header__left">
+      <h2 class="page-header__title">Pedidos</h2>
+      <p class="page-header__subtitle" id="js-pedidos-count">Carregando...</p>
+    </div>
+  </div>
+  <div id="js-pedidos-list">
+    <div class="table-empty">Carregando...</div>
+  </div>
+</section>
     <section class="page" id="page-atividades" aria-label="Registro de Atividades">
   <div class="page-header">
     <div>
