@@ -7430,6 +7430,8 @@ const PedidosPage = (() => {
             <div style="flex:1;min-width:0;">
               <div style="font-weight:600;font-size:13px">${Helpers.escapeHtml(p.cliente_nome)}</div>
               <div style="font-size:11px;color:var(--text-muted);margin-top:2px">📱 ${Helpers.escapeHtml(p.cliente_telefone)} · 🕐 ${data_fmt}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">📍 ${Helpers.escapeHtml(p.cliente_endereco || 'Endereço não informado')}</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px">🪪 CPF (iniciais): ${Helpers.escapeHtml(p.cliente_cpf || 'Não informado')}</div>
             </div>
             <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)">
               R$ ${Number(p.total).toLocaleString('pt-BR', {minimumFractionDigits:2})}
