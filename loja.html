@@ -638,12 +638,14 @@ const { error } = await _sb.from('clientes_loja').insert({
     if (error || !data) { showMsg('Telefone ou senha incorretos.'); return; }
 
     _cliente = data;
+    localStorage.setItem('loja_cliente', JSON.stringify(data));
     entrarNaLoja();
   }
 
   function logout() {
     _cliente = null;
     _carrinho = [];
+    localStorage.removeItem('loja_cliente');
     document.getElementById('lojaWrap').style.display = 'none';
     document.getElementById('authWrap').style.display = 'flex';
     Carrinho.atualizarBadge();
