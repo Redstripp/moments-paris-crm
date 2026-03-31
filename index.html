@@ -4480,39 +4480,7 @@ if (page === 'pedidos') await PedidosPage.render();
           });
         }
 
-        // Carrega gráfico e top produtos
-          DashChart.load();
-          DashTopProdutos.load();
-
-        function renderPanel(containerId, events, labelFn) {
-          const container = document.getElementById(containerId);
-          if (!container) return;
-          if (events.length === 0) {
-            container.innerHTML = '<div class="panel__empty">Nenhum aniversário neste período 🎉</div>';
-            return;
-          }
-          container.innerHTML = events
-            .map((e) => {
-              const st = Helpers.getStatus(e.days);
-              return `<div class="aniv-item">
-        <div class="aniv-item__avatar">${Helpers.getInitials(e.clienteNome)}</div>
-        <div class="aniv-item__info">
-          <div class="aniv-item__name">${Helpers.escapeHtml(e.clienteNome)}</div>
-          <div class="aniv-item__meta">${e.tipo === 'Pessoa Imp.' ? `👤 ${Helpers.escapeHtml(e.pessoa)}` : '🎂 Cliente'} · ${Helpers.formatDateShort(e.data)}</div>
-        </div>
-        <span class="badge ${st.cls}">${labelFn(e)}</span>
-      </div>`;
-            })
-            .join('');
-        }
-
-        return { render };
-      })();
-
-      /* ============================================================
-         MÓDULO: GRÁFICO DO DASHBOARD
-         ============================================================ */
-      const DashTopProdutos = (() => {
+        const DashTopProdutos = (() => {
   async function load() {
     const container = document.getElementById('js-top-produtos');
     if (!container) return;
@@ -4552,6 +4520,39 @@ if (page === 'pedidos') await PedidosPage.render();
   }
   return { load };
 })();
+        
+        // Carrega gráfico e top produtos
+          DashChart.load();
+          DashTopProdutos.load();
+
+        function renderPanel(containerId, events, labelFn) {
+          const container = document.getElementById(containerId);
+          if (!container) return;
+          if (events.length === 0) {
+            container.innerHTML = '<div class="panel__empty">Nenhum aniversário neste período 🎉</div>';
+            return;
+          }
+          container.innerHTML = events
+            .map((e) => {
+              const st = Helpers.getStatus(e.days);
+              return `<div class="aniv-item">
+        <div class="aniv-item__avatar">${Helpers.getInitials(e.clienteNome)}</div>
+        <div class="aniv-item__info">
+          <div class="aniv-item__name">${Helpers.escapeHtml(e.clienteNome)}</div>
+          <div class="aniv-item__meta">${e.tipo === 'Pessoa Imp.' ? `👤 ${Helpers.escapeHtml(e.pessoa)}` : '🎂 Cliente'} · ${Helpers.formatDateShort(e.data)}</div>
+        </div>
+        <span class="badge ${st.cls}">${labelFn(e)}</span>
+      </div>`;
+            })
+            .join('');
+        }
+
+        return { render };
+      })();
+
+      /* ============================================================
+         MÓDULO: GRÁFICO DO DASHBOARD
+         ============================================================ */
       
       const DashChart = (() => {
         let _chart = null;
