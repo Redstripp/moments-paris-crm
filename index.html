@@ -7635,12 +7635,17 @@ await App.refresh();
 
     // Limpa todas as atividades
     async function limparTodas() {
-  const SENHA_CORRETA = '3989870';
+  const HASH_CORRETO = 'bf6b15c541a7c306d33ad29d8b9ee344d4007908f9c92c060ecfed2c33cf7296';
 
   const senha = prompt('Digite a senha para limpar o histórico:');
   if (senha === null) return;
 
-  if (senha !== SENHA_CORRETA) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(senha);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashDigitado = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+  if (hashDigitado !== HASH_CORRETO) {
     alert('❌ Senha incorreta. Operação cancelada.');
     return;
   }
