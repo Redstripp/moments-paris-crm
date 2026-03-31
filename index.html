@@ -6729,6 +6729,8 @@ INSTRUÇÕES:
           // 2. Inicializa o AuthModule com o cliente Supabase
           AuthModule.init(_sb);
 
+          let _appInitialized = false;
+          
           // 3. Escuta mudanças de autenticação
           _sb.auth.onAuthStateChange(async (event, session) => {
             if (session) {
@@ -6739,7 +6741,8 @@ INSTRUÇÕES:
               AuthModule.setUserEmail(session.user?.email);
 
               // Só inicializa o app na primeira vez (SIGNED_IN)
-              if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+              if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && !_appInitialized) {
+  _appInitialized = true;
                 try {
                   DB_Compras.init(_sb);
                   await DB_Compras.getAll(true);
