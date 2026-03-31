@@ -4503,10 +4503,10 @@ console.log('ERRO:', error);
       const top = Object.entries(totais)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5);
-      if (top.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Nenhum dado encontrado.</p>';
-        return;
-      }
+      if (!data || data.length === 0) {
+  container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Nenhum produto cadastrado ainda.</p>';
+  return;
+}
       const max = top[0][1];
       container.innerHTML = top.map(([nome, qtd], i) => `
         <div style="margin-bottom:12px;">
