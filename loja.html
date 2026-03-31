@@ -776,13 +776,15 @@ const Pedido = (() => {
     const itens = _carrinho.map(i => ({ id: i.id, nome: i.nome, preco: i.preco, qty: i.qty, subtotal: i.preco * i.qty }));
 
     const { error } = await _sb.from('pedidos').insert({
-      cliente_id: _cliente.id,
-      cliente_nome: _cliente.nome,
-      cliente_telefone: _cliente.telefone,
-      itens,
-      total,
-      status: 'pendente'
-    });
+  cliente_id: _cliente.id,
+  cliente_nome: _cliente.nome,
+  cliente_telefone: _cliente.telefone,
+  cliente_endereco: _cliente.endereco,   // ← NOVO
+  cliente_cpf: _cliente.cpf_iniciais,    // ← NOVO
+  itens,
+  total,
+  status: 'pendente'
+});
 
     btn.disabled = false;
     btn.innerHTML = 'Confirmar Pedido';
@@ -797,14 +799,15 @@ const Pedido = (() => {
     // Notificação WhatsApp
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
     const msg = encodeURIComponent(
-      `🛍️ *Novo Pedido — Moment's Paris*\n\n` +
-      `👤 Cliente: ${_cliente.nome}\n` +
-      `📱 Telefone: ${_cliente.telefone}\n` +
-      `📍 Endereço: ${_cliente.endereco}\n\n` +
-      `*Itens:*\n` +
-      itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
-      `\n\n*Total: ${formatMoney(total)}*`
-    );
+  `🛍️ *Novo Pedido — Moment's Paris*\n\n` +
+  `👤 Cliente: ${_cliente.nome}\n` +
+  `📱 Telefone: ${_cliente.telefone}\n` +
+  `📍 Endereço: ${_cliente.endereco}\n` +
+  `🪪 CPF (iniciais): ${_cliente.cpf_iniciais || 'Não informado'}\n\n` +
+  `*Itens:*\n` +
+  itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
+  `\n\n*Total: ${formatMoney(total)}*`
+);
     window.open(`https://wa.me/${numeroAdmin}?text=${msg}`, '_blank');
 
     alert('✅ Pedido enviado com sucesso! Aguarde a confirmação.');
