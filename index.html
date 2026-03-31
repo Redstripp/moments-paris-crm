@@ -7104,7 +7104,7 @@ const PedidosPage = (() => {
 
     // Busca pedidos dos últimos 7 dias
     const seteDiasAtras = new Date();
-    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 30);
 
     const { data, error } = await _sb()
       .from('pedidos')
@@ -7117,10 +7117,10 @@ const PedidosPage = (() => {
     const pendentes = (data || []).filter(p => p.status === 'pendente').length;
     if (badge) badge.textContent = pendentes;
     document.getElementById('js-pedidos-count').textContent =
-      `${data?.length || 0} pedido(s) nos últimos 7 dias · ${pendentes} pendente(s)`;
+      `${data?.length || 0} pedido(s) nos últimos 30 dias · ${pendentes} pendente(s)`;
 
     if (!data || data.length === 0) {
-      container.innerHTML = '<div class="table-empty">Nenhum pedido nos últimos 7 dias.</div>';
+      container.innerHTML = '<div class="table-empty">Nenhum pedido nos últimos 30 dias.</div>';
       return;
     }
 
