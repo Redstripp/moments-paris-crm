@@ -4480,7 +4480,7 @@ if (page === 'pedidos') await PedidosPage.render();
           });
         }
 
-        const DashTopProdutos = (() => {
+        window.DashTopProdutos = (() => {
   async function load() {
     const container = document.getElementById('js-top-produtos');
     if (!container) return;
@@ -4551,7 +4551,7 @@ if (page === 'pedidos') await PedidosPage.render();
          MÓDULO: GRÁFICO DO DASHBOARD
          ============================================================ */
       
-      const DashChart = (() => {
+      window.DashChart = (() => {
         let _chart = null;
         let _mode = 'valor';
         let _dados = { labels: [], valor: [], pedidos: [], clientes: [] };
