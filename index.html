@@ -4521,9 +4521,6 @@ if (page === 'pedidos') await PedidosPage.render();
   return { load };
 })();
         
-        // Carrega gráfico e top produtos
-          DashChart.load();
-          DashTopProdutos.load();
 
         function renderPanel(containerId, events, labelFn) {
           const container = document.getElementById(containerId);
@@ -4669,6 +4666,12 @@ if (page === 'pedidos') await PedidosPage.render();
 
         return { load, setMode };
       })();
+
+      // Carrega gráfico e top produtos
+         document.addEventListener('DOMContentLoaded', () => {
+  DashChart.load();
+  DashTopProdutos.load();
+});
       
       /* ============================================================
    MÓDULO: CLIENTS PAGE
