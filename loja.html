@@ -848,9 +848,17 @@ function entrarNaLoja() {
   if (salvo) {
     try {
       _cliente = JSON.parse(salvo);
+
+      const carrinhoSalvo = localStorage.getItem('loja_carrinho');
+      if (carrinhoSalvo) {
+        _carrinho = JSON.parse(carrinhoSalvo);
+      }
+
       entrarNaLoja();
+      Carrinho.atualizarBadge();
     } catch (e) {
       localStorage.removeItem('loja_cliente');
+      localStorage.removeItem('loja_carrinho');
     }
   }
 })();
