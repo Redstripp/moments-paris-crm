@@ -3564,6 +3564,24 @@
       <p class="page-header__subtitle" id="js-pedidos-count">Carregando...</p>
     </div>
   </div>
+  <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+    <button onclick="PedidosPage.filtrar('todos')" id="filtro-todos"
+      style="padding:7px 16px;border-radius:999px;border:1px solid var(--gold);background:var(--gold);color:#000;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+      Todos
+    </button>
+    <button onclick="PedidosPage.filtrar('pendente')" id="filtro-pendente"
+      style="padding:7px 16px;border-radius:999px;border:1px solid var(--warning);background:transparent;color:var(--warning);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+      ⏳ Pendentes
+    </button>
+    <button onclick="PedidosPage.filtrar('separado')" id="filtro-separado"
+      style="padding:7px 16px;border-radius:999px;border:1px solid var(--gold);background:transparent;color:var(--gold);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+      📦 Separados
+    </button>
+    <button onclick="PedidosPage.filtrar('entregue')" id="filtro-entregue"
+      style="padding:7px 16px;border-radius:999px;border:1px solid var(--success);background:transparent;color:var(--success);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+      ✅ Entregues
+    </button>
+  </div>
   <div id="js-pedidos-list">
     <div class="table-empty">Carregando...</div>
   </div>
@@ -7399,6 +7417,26 @@ return { abrir, fechar, salvar, previewImagem };
 const PedidosPage = (() => {
   function _sb() { return DB.getClient(); }
 
+  let _filtroAtivo = 'todos';
+  let _todosPedidos = [];
+
+  function filtrar(status) {
+    _filtroAtivo = status;
+
+    // Atualiza visual dos botões
+    ['todos','pendente','separado','entregue'].forEach(s => {
+      const btn = document.getElementById(`filtro-${s}`);
+      if (!btn) return;
+      const cores = { todos: 'var(--gold)', pendente: 'var(--warning)', separado: 'var(--gold)', entregue: 'var(--success)' };
+      const cor = cores[s];
+      btn.style.background = s === status ? cor : 'transparent';
+      btn.style.color = s === status ? '#000' : cor;
+    });
+
+    const filtrados = status === 'todos' ? _todosPedidos : _todosPedidos.filter(p => p.status === status);
+    _renderCards(filtrados);
+  }
+
   async function render() {
     const container = document.getElementById('js-pedidos-list');
     const badge = document.getElementById('js-badge-pedidos');
@@ -7420,12 +7458,19 @@ const PedidosPage = (() => {
     document.getElementById('js-pedidos-count').textContent =
       `${data?.length || 0} pedido(s) nos últimos 30 dias · ${pendentes} pendente(s)`;
 
-    if (!data || data.length === 0) {
-      container.innerHTML = '<div class="table-empty">Nenhum pedido nos últimos 30 dias.</div>';
+    _todosPedidos = data || [];
+    filtrar(_filtroAtivo);
+  }
+
+  function _renderCards(lista) {
+    const container = document.getElementById('js-pedidos-list');
+
+    if (!lista || lista.length === 0) {
+      container.innerHTML = '<div class="table-empty">Nenhum pedido encontrado.</div>';
       return;
     }
 
-    container.innerHTML = data.map(p => {
+    container.innerHTML = lista.map(p => {
       const itens = Array.isArray(p.itens) ? p.itens : [];
       const data_fmt = new Date(p.criado_em).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       const statusColor = p.status === 'entregue' ? 'var(--success)' : p.status === 'separado' ? 'var(--gold)' : 'var(--warning)';
@@ -7492,7 +7537,7 @@ const PedidosPage = (() => {
     await render();
   }
 
-  return { render, atualizarStatus, excluirPedido };
+  return { render, filtrar, atualizarStatus, excluirPedido };
 })();
   
   /* ============================================================
