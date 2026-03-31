@@ -646,6 +646,7 @@ const { error } = await _sb.from('clientes_loja').insert({
     _cliente = null;
     _carrinho = [];
     localStorage.removeItem('loja_cliente');
+    localStorage.removeItem('loja_carrinho');
     document.getElementById('lojaWrap').style.display = 'none';
     document.getElementById('authWrap').style.display = 'flex';
     Carrinho.atualizarBadge();
@@ -810,6 +811,7 @@ const Pedido = (() => {
 
     // Limpa carrinho
     _carrinho = [];
+    localStorage.removeItem('loja_carrinho');
     Carrinho.atualizarBadge();
     document.getElementById('modalConfirm').classList.remove('is-open');
 
