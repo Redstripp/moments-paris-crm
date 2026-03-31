@@ -4484,9 +4484,11 @@ if (page === 'pedidos') await PedidosPage.render();
   async function load() {
     const container = document.getElementById('js-top-produtos');
     if (!container) return;
-    container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Carregando...</p>';
+    container.innerHTML = 'Carregando...';
     try {
-      const { data, error } = await window.supabase
+      const sb = DB.getClient();
+
+const { data, error } = await sb
   .from('produtos_compra')
   .select('*');
 
@@ -4519,7 +4521,7 @@ console.log('ERRO:', error);
       `).join('');
     } catch (e) {
   console.error('ERRO TOP PRODUTOS:', e);
-  container.innerHTML = '<p style="color:red;font-size:13px;">Erro ao carregar.</p>';
+  container.innerHTML = 'Erro ao carregar.';
 }
   }
   return { load };
