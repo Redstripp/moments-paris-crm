@@ -4480,6 +4480,10 @@ if (page === 'pedidos') await PedidosPage.render();
           });
         }
 
+        // Carrega gráfico e top produtos
+          DashChart.load();
+          DashTopProdutos.load();
+
         function renderPanel(containerId, events, labelFn) {
           const container = document.getElementById(containerId);
           if (!container) return;
@@ -4505,6 +4509,125 @@ if (page === 'pedidos') await PedidosPage.render();
         return { render };
       })();
 
+      /* ============================================================
+         MÓDULO: GRÁFICO DO DASHBOARD
+         ============================================================ */
+      const DashChart = (() => {
+        let _chart = null;
+        let _mode = 'valor';
+        let _dados = { labels: [], valor: [], pedidos: [], clientes: [] };
+
+        const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+        async function load() {
+          const sb = DB.getClient();
+          const seisMesesAtras = new Date();
+          seisMesesAtras.setMonth(seisMesesAtras.getMonth() - 5);
+          seisMesesAtras.setDate(1);
+          seisMesesAtras.setHours(0,0,0,0);
+
+          const { data } = await sb
+            .from('pedidos')
+            .select('criado_em, total, cliente_telefone')
+            .gte('criado_em', seisMesesAtras.toISOString())
+            .order('criado_em', { ascending: true });
+
+          // Monta os últimos 6 meses
+          const now = new Date();
+          const labels = [];
+          const mesesRef = [];
+          for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels.push(MESES[d.getMonth()] + '/' + String(d.getFullYear()).slice(2));
+            mesesRef.push({ ano: d.getFullYear(), mes: d.getMonth() });
+          }
+
+          const valorArr = [], pedidosArr = [], clientesArr = [];
+          for (const ref of mesesRef) {
+            const grupo = (data || []).filter(p => {
+              const d = new Date(p.criado_em);
+              return d.getFullYear() === ref.ano && d.getMonth() === ref.mes;
+            });
+            valorArr.push(grupo.reduce((s, p) => s + (parseFloat(p.total) || 0), 0));
+            pedidosArr.push(grupo.length);
+            const fones = new Set(grupo.map(p => p.cliente_telefone).filter(Boolean));
+            clientesArr.push(fones.size);
+          }
+
+          _dados = { labels, valor: valorArr, pedidos: pedidosArr, clientes: clientesArr };
+          _draw();
+        }
+
+        function _getDataset() {
+          if (_mode === 'valor') return { data: _dados.valor, label: 'Valor (R$)', color: '#c9a84c' };
+          if (_mode === 'pedidos') return { data: _dados.pedidos, label: 'Pedidos', color: '#2980b9' };
+          return { data: _dados.clientes, label: 'Clientes únicos', color: '#27ae60' };
+        }
+
+        function _draw() {
+          const canvas = document.getElementById('js-dash-chart');
+          if (!canvas) return;
+          const { data, label, color } = _getDataset();
+          if (_chart) _chart.destroy();
+          _chart = new Chart(canvas, {
+            type: 'line',
+            data: {
+              labels: _dados.labels,
+              datasets: [{
+                label,
+                data,
+                borderColor: color,
+                backgroundColor: color + '22',
+                borderWidth: 2.5,
+                pointBackgroundColor: color,
+                pointRadius: 4,
+                tension: 0.35,
+                fill: true,
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: (ctx) => _mode === 'valor'
+                      ? ' R$ ' + ctx.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits:2})
+                      : ' ' + ctx.parsed.y
+                  }
+                }
+              },
+              scales: {
+                x: { grid: { color: 'rgba(201,168,76,0.08)' }, ticks: { color: '#9a8f7a', font: { size: 11 } } },
+                y: { grid: { color: 'rgba(201,168,76,0.08)' }, ticks: { color: '#9a8f7a', font: { size: 11 } }, beginAtZero: true }
+              }
+            }
+          });
+        }
+
+        function setMode(mode) {
+          _mode = mode;
+          // Atualiza visual dos botões
+          ['valor','pedidos','clientes'].forEach(m => {
+            const btn = document.getElementById('js-chart-btn-' + m);
+            if (!btn) return;
+            if (m === mode) {
+              btn.style.background = 'var(--gold)';
+              btn.style.color = 'var(--text-inverse)';
+              btn.style.fontWeight = '600';
+            } else {
+              btn.style.background = 'var(--bg-overlay)';
+              btn.style.color = 'var(--text-secondary)';
+              btn.style.fontWeight = '400';
+            }
+          });
+          _draw();
+        }
+
+        return { load, setMode };
+      })();
+      
       /* ============================================================
    MÓDULO: CLIENTS PAGE
    ============================================================ */
