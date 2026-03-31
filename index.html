@@ -3999,7 +3999,14 @@
           }
 
           // Cria o cliente do Supabase usando o SDK carregado no <head>
-          _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+          _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,
+    storage: window.localStorage,
+  }
+});
 
           // Teste de conexão: busca todos os clientes
           await getAll(true); // força fetch da nuvem
