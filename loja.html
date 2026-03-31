@@ -834,6 +834,19 @@ function entrarNaLoja() {
   document.getElementById('lojaUser').textContent = '👤 ' + _cliente.nome;
   Produtos.carregar();
 }
+
+// Recupera sessão ao recarregar
+(function restaurarSessao() {
+  const salvo = localStorage.getItem('loja_cliente');
+  if (salvo) {
+    try {
+      _cliente = JSON.parse(salvo);
+      entrarNaLoja();
+    } catch (e) {
+      localStorage.removeItem('loja_cliente');
+    }
+  }
+})();
 </script>
 </body>
 </html>
