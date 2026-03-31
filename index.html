@@ -4487,8 +4487,11 @@ if (page === 'pedidos') await PedidosPage.render();
     container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Carregando...</p>';
     try {
       const { data, error } = await window.supabase
-        .from('produtos_compra')
-        .select('produto_nome, quantidade');
+  .from('produtos_compra')
+  .select('*');
+
+console.log('DADOS PRODUTOS:', data);
+console.log('ERRO:', error);
       if (error) throw error;
       const totais = {};
       (data || []).forEach(item => {
