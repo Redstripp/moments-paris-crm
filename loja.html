@@ -745,6 +745,8 @@ const { error } = await _sb.from('clientes_loja').insert({
 
 // ── PRODUTOS ──
 const Produtos = (() => {
+  let _todos = [];
+
   async function carregar() {
     const { data, error } = await _sb.from('produtos').select('*').eq('disponivel', true).order('criado_em', { ascending: false });
     const grid = document.getElementById('produtosGrid');
@@ -752,7 +754,26 @@ const Produtos = (() => {
       grid.innerHTML = '<div class="empty-state">Nenhum produto disponível no momento.</div>';
       return;
     }
-    grid.innerHTML = data.map(p => `
+    _todos = data;
+    _renderizar(_todos);
+  }
+
+  function buscar(termo) {
+    const t = termo.toLowerCase().trim();
+    const filtrados = t
+      ? _todos.filter(p => p.nome.toLowerCase().includes(t) || (p.descricao || '').toLowerCase().includes(t))
+      : _todos;
+
+    const grid = document.getElementById('produtosGrid');
+    if (filtrados.length === 0) {
+      grid.innerHTML = '<div class="empty-state">Nenhum produto encontrado.</div>';
+      return;
+    }
+    _renderizar(filtrados);
+  }
+
+  function _renderizar(lista) {
+    document.getElementById('produtosGrid').innerHTML = lista.map(p => `
       <div class="produto-card">
         <div class="produto-card__img">
           ${p.imagem_url ? `<img src="${p.imagem_url}" alt="${p.nome}" onerror="this.parentElement.innerHTML='🛍️'"/>` : '🛍️'}
@@ -765,7 +786,8 @@ const Produtos = (() => {
         </div>
       </div>`).join('');
   }
-  return { carregar };
+
+  return { carregar, buscar };
 })();
 
 // ── CARRINHO ──
