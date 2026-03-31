@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moment's Paris — Loja</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e2c47e;
+      --gold-dark: #8b6914;
+      --gold-glow: rgba(201,168,76,0.15);
+      --bg-base: #0a0a0a;
+      --bg-surface: #111111;
+      --bg-raised: #181818;
+      --bg-overlay: #202020;
+      --text-primary: #f5edd8;
+      --text-secondary: #9a8f7a;
+      --text-muted: #5c554a;
+      --border-subtle: rgba(201,168,76,0.1);
+      --border-default: rgba(201,168,76,0.2);
+      --border-strong: rgba(201,168,76,0.45);
+      --danger: #c0392b;
+      --success: #27ae60;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.5);
+      --shadow-gold: 0 4px 24px rgba(201,168,76,0.25);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── TELA DE AUTH ── */
+    .auth-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .auth-logo h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 300;
+      color: var(--gold-light);
+      letter-spacing: 0.15em;
+    }
+    .auth-logo p {
+      font-size: 9px;
+      letter-spacing: 0.35em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+    }
+    .auth-tab.is-active {
+      background: var(--gold);
+      color: #000;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px 13px;
+      color: var(--text-primary);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--gold); }
+    .form-input.is-error { border-color: var(--danger); }
+    .form-error {
+      font-size: 11px;
+      color: var(--danger);
+      margin-top: 4px;
+      display: block;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 11px 20px;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn--primary {
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: #000;
+    }
+    .btn--primary:hover { opacity: 0.9; }
+    .btn--secondary {
+      background: var(--bg-raised);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+    }
+    .btn--danger {
+      background: rgba(192,57,43,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(192,57,43,0.25);
+    }
+    .auth-msg {
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      margin-bottom: 14px;
+      text-align: center;
+      display: none;
+    }
+    .auth-msg--error { background: rgba(192,57,43,0.1); color: var(--danger); border: 1px solid rgba(192,57,43,0.2); }
+    .auth-msg--success { background: rgba(39,174,96,0.1); color: var(--success); border: 1px solid rgba(39,174,96,0.2); }
+
+    /* ── LOJA ── */
+    .loja-wrap { display: none; min-height: 100vh; flex-direction: column; }
+    .loja-header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .loja-header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      flex: 1;
+    }
+    .loja-user {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .carrinho-btn {
+      position: relative;
+      background: var(--bg-raised);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      padding: 8px 14px;
+      color: var(--text-primary);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .carrinho-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .carrinho-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: var(--gold);
+      color: #000;
+      font-size: 9px;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .loja-body { flex: 1; padding: 28px 32px; max-width: 1200px; margin: 0 auto; width: 100%; }
+    .produtos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .produto-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .produto-card:hover { border-color: var(--border-default); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .produto-card__img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: var(--bg-raised);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 40px;
+    }
+    .produto-card__img img { width: 100%; height: 100%; object-fit: cover; }
+    .produto-card__body { padding: 16px; }
+    .produto-card__nome {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .produto-card__desc {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .produto-card__preco {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .btn--add {
+      width: 100%;
+      padding: 9px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: #000;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: opacity 0.2s;
+    }
+    .btn--add:hover { opacity: 0.85; }
+
+    /* ── CARRINHO MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.is-open { display: flex; }
+    .modal {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+    }
+    .modal__header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal__title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-weight: 400;
+    }
+    .modal__close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .modal__body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+    .modal__footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 10px;
+      background: var(--bg-raised);
+    }
+    .carrinho-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .carrinho-item:last-child { border-bottom: none; }
+    .carrinho-item__nome { flex: 1; font-size: 13px; font-weight: 500; }
+    .carrinho-item__preco { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .qty-controls { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border-default);
+      background: var(--bg-overlay);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .qty-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .qty-num { font-size: 13px; font-weight: 600; min-width: 20px; text-align: center; }
+    .carrinho-total {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      color: var(--gold);
+      text-align: right;
+      padding: 12px 0 0;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ── CONFIRMAÇÃO ── */
+    .confirm-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .confirm-item:last-child { border-bottom: none; }
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(0,0,0,0.2);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .logout-btn {
+      background: none;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 7px 12px;
+      color: var(--text-muted);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    @media (max-width: 600px) {
+      .loja-body { padding: 16px; }
+      .produtos-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TELA DE AUTH ── -->
+<div class="auth-wrap" id="authWrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <h1>MOMENT'S</h1>
+      <p>Paris · Loja</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab is-active" onclick="Auth.showTab('login')">Entrar</button>
+      <button class="auth-tab" onclick="Auth.showTab('cadastro')">Criar Conta</button>
+    </div>
+    <div id="authMsg" class="auth-msg"></div>
+
+    <!-- LOGIN -->
+    <div id="formLogin">
+      <div class="form-group">
+        <label class="form-label">Telefone</label>
+        <input class="form-input" id="loginTel" type="tel" placeholder="(87) 99999-9999" oninput="formatPhone(this)"/>
+        <span class="form-error" id="errLoginTel"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="loginSenha" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') Auth.login()"/>
+      </div>
+      <button class="btn btn--primary" onclick="Auth.login()">Entrar</button>
+    </div>
+
+    <!-- CADASTRO -->
+    <div id="formCadastro" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Nome completo</label>
+        <input class="form-input" id="cadNome" type="text" placeholder="Seu nome"/>
+        <span class="form-error" id="errCadNome"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefone</label>
+        <input class="form-input" id="cadTel" type="tel" placeholder="(87) 99999-9999" oninput="formatPhone(this)"/>
+        <span class="form-error" id="errCadTel"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Endereço</label>
+        <input class="form-input" id="cadEnd" type="text" placeholder="Rua, número, bairro"/>
+        <span class="form-error" id="errCadEnd"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" id="cadSenha" type="password" placeholder="Mínimo 6 caracteres"/>
+        <span class="form-error" id="errCadSenha"></span>
+      </div>
+      <button class="btn btn--primary" onclick="Auth.cadastrar()">Criar Conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOJA ── -->
+<div class="loja-wrap" id="lojaWrap">
+  <header class="loja-header">
+    <h1>Moment's Paris</h1>
+    <span class="loja-user" id="lojaUser"></span>
+    <button class="carrinho-btn" onclick="Carrinho.abrir()">
+      🛍️ Carrinho
+      <span class="carrinho-badge" id="carrinhoBadge">0</span>
+    </button>
+    <button class="logout-btn" onclick="Auth.logout()">Sair</button>
+  </header>
+  <div class="loja-body">
+    <div class="produtos-grid" id="produtosGrid">
+      <div class="empty-state">Carregando produtos...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: CARRINHO ── -->
+<div class="modal-overlay" id="modalCarrinho">
+  <div class="modal">
+    <div class="modal__header">
+      <span class="modal__title">🛍️ Meu Carrinho</span>
+      <button class="modal__close" onclick="Carrinho.fechar()">✕</button>
+    </div>
+    <div class="modal__body" id="carrinhoBody"></div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="Carrinho.fechar()">Continuar</button>
+      <button class="btn btn--primary" onclick="Carrinho.finalizar()">Finalizar Pedido →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: CONFIRMAÇÃO ── -->
+<div class="modal-overlay" id="modalConfirm">
+  <div class="modal">
+    <div class="modal__header">
+      <span class="modal__title">✅ Confirmar Pedido</span>
+      <button class="modal__close" onclick="document.getElementById('modalConfirm').classList.remove('is-open')">✕</button>
+    </div>
+    <div class="modal__body" id="confirmBody"></div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="document.getElementById('modalConfirm').classList.remove('is-open')">Voltar</button>
+      <button class="btn btn--primary" id="btnConfirmarPedido" onclick="Pedido.confirmar()">Confirmar Pedido</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const SUPABASE_URL = 'https://aacgzwbypqwcyiotnalj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_QxVdjp_ZTVDs5qw5kBrr5w_BakfSbR3';
+
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let _cliente = null;
+let _carrinho = [];
+
+// ── UTILITÁRIOS ──
+function formatPhone(input) {
+  let v = input.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d*)$/, '($1) $2-$3');
+  else if (v.length > 2) v = v.replace(/^(\d{2})(\d*)$/, '($1) $2');
+  input.value = v;
+}
+
+function validarTelefone(tel) {
+  const digits = tel.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 11;
+}
+
+function formatMoney(v) {
+  return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function showMsg(msg, type='error') {
+  const el = document.getElementById('authMsg');
+  el.textContent = msg;
+  el.className = `auth-msg auth-msg--${type}`;
+  el.style.display = 'block';
+}
+
+// ── AUTH ──
+const Auth = (() => {
+  function showTab(tab) {
+    document.getElementById('formLogin').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('formCadastro').style.display = tab === 'cadastro' ? 'block' : 'none';
+    document.getElementById('authMsg').style.display = 'none';
+    document.querySelectorAll('.auth-tab').forEach((t,i) => {
+      t.classList.toggle('is-active', (i===0 && tab==='login') || (i===1 && tab==='cadastro'));
+    });
+  }
+
+  async function cadastrar() {
+    const nome  = document.getElementById('cadNome').value.trim();
+    const tel   = document.getElementById('cadTel').value.trim();
+    const end   = document.getElementById('cadEnd').value.trim();
+    const senha = document.getElementById('cadSenha').value;
+
+    // Limpa erros
+    ['errCadNome','errCadTel','errCadEnd','errCadSenha'].forEach(id => document.getElementById(id).textContent = '');
+    document.getElementById('authMsg').style.display = 'none';
+
+    let ok = true;
+    if (!nome) { document.getElementById('errCadNome').textContent = 'Nome é obrigatório'; ok = false; }
+    if (!validarTelefone(tel)) { document.getElementById('errCadTel').textContent = 'Telefone inválido'; ok = false; }
+    if (!end) { document.getElementById('errCadEnd').textContent = 'Endereço é obrigatório'; ok = false; }
+    if (senha.length < 6) { document.getElementById('errCadSenha').textContent = 'Mínimo 6 caracteres'; ok = false; }
+    if (!ok) return;
+
+    const { error } = await _sb.from('clientes_loja').insert({ nome, telefone: tel, endereco: end, senha });
+    if (error) {
+      if (error.message.includes('unique')) showMsg('Este telefone já está cadastrado.');
+      else showMsg('Erro ao criar conta: ' + error.message);
+      return;
+    }
+    showMsg('Conta criada com sucesso! Faça login.', 'success');
+    showTab('login');
+    document.getElementById('loginTel').value = tel;
+  }
+
+  async function login() {
+    const tel   = document.getElementById('loginTel').value.trim();
+    const senha = document.getElementById('loginSenha').value;
+    document.getElementById('errLoginTel').textContent = '';
+    document.getElementById('authMsg').style.display = 'none';
+
+    if (!validarTelefone(tel)) { document.getElementById('errLoginTel').textContent = 'Telefone inválido'; return; }
+    if (!senha) { showMsg('Digite sua senha.'); return; }
+
+    const { data, error } = await _sb.from('clientes_loja').select('*').eq('telefone', tel).eq('senha', senha).single();
+    if (error || !data) { showMsg('Telefone ou senha incorretos.'); return; }
+
+    _cliente = data;
+    entrarNaLoja();
+  }
+
+  function logout() {
+    _cliente = null;
+    _carrinho = [];
+    document.getElementById('lojaWrap').style.display = 'none';
+    document.getElementById('authWrap').style.display = 'flex';
+    Carrinho.atualizarBadge();
+  }
+
+  return { showTab, cadastrar, login, logout };
+})();
+
+// ── PRODUTOS ──
+const Produtos = (() => {
+  async function carregar() {
+    const { data, error } = await _sb.from('produtos').select('*').eq('disponivel', true).order('criado_em', { ascending: false });
+    const grid = document.getElementById('produtosGrid');
+    if (error || !data || data.length === 0) {
+      grid.innerHTML = '<div class="empty-state">Nenhum produto disponível no momento.</div>';
+      return;
+    }
+    grid.innerHTML = data.map(p => `
+      <div class="produto-card">
+        <div class="produto-card__img">
+          ${p.imagem_url ? `<img src="${p.imagem_url}" alt="${p.nome}" onerror="this.parentElement.innerHTML='🛍️'"/>` : '🛍️'}
+        </div>
+        <div class="produto-card__body">
+          <div class="produto-card__nome">${p.nome}</div>
+          ${p.descricao ? `<div class="produto-card__desc">${p.descricao}</div>` : ''}
+          <div class="produto-card__preco">${formatMoney(p.preco)}</div>
+          <button class="btn--add" onclick='Carrinho.adicionar(${JSON.stringify(p)})'>+ Adicionar</button>
+        </div>
+      </div>`).join('');
+  }
+  return { carregar };
+})();
+
+// ── CARRINHO ──
+const Carrinho = (() => {
+  function adicionar(produto) {
+    const idx = _carrinho.findIndex(i => i.id === produto.id);
+    if (idx >= 0) _carrinho[idx].qty++;
+    else _carrinho.push({ ...produto, qty: 1 });
+    atualizarBadge();
+    renderizar();
+  }
+
+  function remover(id) {
+    _carrinho = _carrinho.filter(i => i.id !== id);
+    atualizarBadge();
+    renderizar();
+  }
+
+  function alterarQty(id, delta) {
+    const idx = _carrinho.findIndex(i => i.id === id);
+    if (idx < 0) return;
+    _carrinho[idx].qty += delta;
+    if (_carrinho[idx].qty <= 0) _carrinho.splice(idx, 1);
+    atualizarBadge();
+    renderizar();
+  }
+
+  function atualizarBadge() {
+    const total = _carrinho.reduce((s, i) => s + i.qty, 0);
+    document.getElementById('carrinhoBadge').textContent = total;
+  }
+
+  function renderizar() {
+    const body = document.getElementById('carrinhoBody');
+    if (_carrinho.length === 0) {
+      body.innerHTML = '<div class="empty-state">Seu carrinho está vazio.</div>';
+      return;
+    }
+    const total = _carrinho.reduce((s, i) => s + i.preco * i.qty, 0);
+    body.innerHTML = _carrinho.map(item => `
+      <div class="carrinho-item">
+        <div style="flex:1">
+          <div class="carrinho-item__nome">${item.nome}</div>
+          <div class="carrinho-item__preco">${formatMoney(item.preco)} cada</div>
+        </div>
+        <div class="qty-controls">
+          <button class="qty-btn" onclick="Carrinho.alterarQty('${item.id}', -1)">−</button>
+          <span class="qty-num">${item.qty}</span>
+          <button class="qty-btn" onclick="Carrinho.alterarQty('${item.id}', 1)">+</button>
+        </div>
+        <div style="min-width:80px;text-align:right;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold)">
+          ${formatMoney(item.preco * item.qty)}
+        </div>
+        <button onclick="Carrinho.remover('${item.id}')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px">✕</button>
+      </div>`).join('') +
+      `<div class="carrinho-total">Total: ${formatMoney(total)}</div>`;
+  }
+
+  function abrir() {
+    renderizar();
+    document.getElementById('modalCarrinho').classList.add('is-open');
+  }
+
+  function fechar() {
+    document.getElementById('modalCarrinho').classList.remove('is-open');
+  }
+
+  function finalizar() {
+    if (_carrinho.length === 0) return;
+    fechar();
+    Pedido.mostrarConfirmacao();
+  }
+
+  return { adicionar, remover, alterarQty, atualizarBadge, renderizar, abrir, fechar, finalizar };
+})();
+
+// ── PEDIDO ──
+const Pedido = (() => {
+  function mostrarConfirmacao() {
+    const total = _carrinho.reduce((s, i) => s + i.preco * i.qty, 0);
+    const body = document.getElementById('confirmBody');
+    body.innerHTML = `
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Revise seu pedido antes de confirmar:</p>
+      ${_carrinho.map(item => `
+        <div class="confirm-item">
+          <span>${item.nome} × ${item.qty}</span>
+          <span style="color:var(--gold)">${formatMoney(item.preco * item.qty)}</span>
+        </div>`).join('')}
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);text-align:right;padding-top:12px;">
+        Total: ${formatMoney(total)}
+      </div>
+      <div style="margin-top:16px;padding:12px;background:var(--bg-raised);border-radius:8px;font-size:12px;color:var(--text-secondary)">
+        📍 Entrega em: <strong style="color:var(--text-primary)">${_cliente.endereco}</strong>
+      </div>`;
+    document.getElementById('modalConfirm').classList.add('is-open');
+  }
+
+  async function confirmar() {
+    const btn = document.getElementById('btnConfirmarPedido');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Enviando...';
+
+    const total = _carrinho.reduce((s, i) => s + i.preco * i.qty, 0);
+    const itens = _carrinho.map(i => ({ id: i.id, nome: i.nome, preco: i.preco, qty: i.qty, subtotal: i.preco * i.qty }));
+
+    const { error } = await _sb.from('pedidos').insert({
+      cliente_id: _cliente.id,
+      cliente_nome: _cliente.nome,
+      cliente_telefone: _cliente.telefone,
+      itens,
+      total,
+      status: 'pendente'
+    });
+
+    btn.disabled = false;
+    btn.innerHTML = 'Confirmar Pedido';
+
+    if (error) { alert('Erro ao enviar pedido: ' + error.message); return; }
+
+    // Limpa carrinho
+    _carrinho = [];
+    Carrinho.atualizarBadge();
+    document.getElementById('modalConfirm').classList.remove('is-open');
+
+    // Notificação WhatsApp
+    const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
+    const msg = encodeURIComponent(
+      `🛍️ *Novo Pedido — Moment's Paris*\n\n` +
+      `👤 Cliente: ${_cliente.nome}\n` +
+      `📱 Telefone: ${_cliente.telefone}\n` +
+      `📍 Endereço: ${_cliente.endereco}\n\n` +
+      `*Itens:*\n` +
+      itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
+      `\n\n*Total: ${formatMoney(total)}*`
+    );
+    window.open(`https://wa.me/${numeroAdmin}?text=${msg}`, '_blank');
+
+    alert('✅ Pedido enviado com sucesso! Aguarde a confirmação.');
+  }
+
+  return { mostrarConfirmacao, confirmar };
+})();
+
+// ── BOOT ──
+function entrarNaLoja() {
+  document.getElementById('authWrap').style.display = 'none';
+  document.getElementById('lojaWrap').style.display = 'flex';
+  document.getElementById('lojaUser').textContent = '👤 ' + _cliente.nome;
+  Produtos.carregar();
+}
+</script>
+</body>
+</html>
