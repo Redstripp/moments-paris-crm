@@ -803,6 +803,7 @@ const Pedido = (() => {
   `👤 Cliente: ${_cliente.nome}\n` +
   `📱 Telefone: ${_cliente.telefone}\n` +
   `📍 Endereço: ${_cliente.endereco}\n` +
+  `🏢 ID da Empresa: ${_cliente.empresa || 'Não informado'}\n` +
   `🪪 CPF (iniciais): ${_cliente.cpf_iniciais || 'Não informado'}\n\n` +
   `*Itens:*\n` +
   itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
