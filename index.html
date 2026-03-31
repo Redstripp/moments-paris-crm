@@ -4515,8 +4515,9 @@ if (page === 'pedidos') await PedidosPage.render();
         </div>
       `).join('');
     } catch (e) {
-      container.innerHTML = '<p style="color:var(--text-secondary);font-size:13px;">Erro ao carregar.</p>';
-    }
+  console.error('ERRO TOP PRODUTOS:', e);
+  container.innerHTML = '<p style="color:red;font-size:13px;">Erro ao carregar.</p>';
+}
   }
   return { load };
 })();
