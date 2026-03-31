@@ -408,6 +408,59 @@
     }
     .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
 
+    .historico-item {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .historico-item__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--bg-raised);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .historico-item__data {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .historico-item__total {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      color: var(--gold);
+    }
+
+    .historico-item__status {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid;
+    }
+
+    .historico-item__body {
+      padding: 12px 16px;
+    }
+
+    .historico-item__linha {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12.5px;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .historico-item__linha:last-child {
+      border-bottom: none;
+    }
+
     @media (max-width: 600px) {
       .loja-body { padding: 16px; }
       .produtos-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -488,6 +541,7 @@
       🛍️ Carrinho
       <span class="carrinho-badge" id="carrinhoBadge">0</span>
     </button>
+    <button class="logout-btn" onclick="Historico.abrir()">📋 Meus Pedidos</button>
     <button class="logout-btn" onclick="Auth.logout()">Sair</button>
   </header>
   <div class="loja-body">
@@ -508,6 +562,22 @@
     <div class="modal__footer">
       <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="Carrinho.fechar()">Continuar</button>
       <button class="btn btn--primary" onclick="Carrinho.finalizar()">Finalizar Pedido →</button>
+    </div>
+  </div>
+</div>
+
+  <!-- ── MODAL: HISTÓRICO DE PEDIDOS ── -->
+<div class="modal-overlay" id="modalHistorico">
+  <div class="modal">
+    <div class="modal__header">
+      <span class="modal__title">📋 Meus Pedidos</span>
+      <button class="modal__close" onclick="Historico.fechar()">✕</button>
+    </div>
+    <div class="modal__body" id="historicoBody">
+      <div class="empty-state">Carregando...</div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="Historico.fechar()">Fechar</button>
     </div>
   </div>
 </div>
@@ -836,6 +906,74 @@ const Pedido = (() => {
   return { mostrarConfirmacao, confirmar };
 })();
 
+// ── HISTÓRICO ──
+const Historico = (() => {
+  function abrir() {
+    document.getElementById('modalHistorico').classList.add('is-open');
+    carregar();
+  }
+
+  function fechar() {
+    document.getElementById('modalHistorico').classList.remove('is-open');
+  }
+
+  async function carregar() {
+    const body = document.getElementById('historicoBody');
+    body.innerHTML = '<div class="empty-state">Carregando...</div>';
+
+    const { data, error } = await _sb
+      .from('pedidos')
+      .select('*')
+      .eq('cliente_id', _cliente.id)
+      .order('criado_em', { ascending: false });
+
+    if (error || !data || data.length === 0) {
+      body.innerHTML = '<div class="empty-state">Você ainda não fez nenhum pedido.</div>';
+      return;
+    }
+
+    const statusCor = {
+      pendente:  { cor: 'var(--warning)',  label: '⏳ Pendente'  },
+      separado:  { cor: 'var(--gold)',     label: '📦 Separado'  },
+      entregue:  { cor: 'var(--success)',  label: '✅ Entregue'  },
+    };
+
+    body.innerHTML = data.map(p => {
+      const itens = Array.isArray(p.itens) ? p.itens : [];
+      const data_fmt = new Date(p.criado_em).toLocaleString('pt-BR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      const st = statusCor[p.status] || statusCor.pendente;
+
+      return `
+        <div class="historico-item">
+          <div class="historico-item__header">
+            <div>
+              <div style="font-size:13px;font-weight:600">Pedido #${p.id.slice(-6).toUpperCase()}</div>
+              <div class="historico-item__data">🕐 ${data_fmt}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="historico-item__total">R$ ${Number(p.total).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+              <span class="historico-item__status" style="color:${st.cor};border-color:${st.cor};background:${st.cor}22">
+                ${st.label}
+              </span>
+            </div>
+          </div>
+          <div class="historico-item__body">
+            ${itens.map(i => `
+              <div class="historico-item__linha">
+                <span>${i.nome} × ${i.qty}</span>
+                <span style="color:var(--gold)">R$ ${Number(i.subtotal).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  return { abrir, fechar };
+})();
+  
 // ── BOOT ──
 function entrarNaLoja() {
   document.getElementById('authWrap').style.display = 'none';
