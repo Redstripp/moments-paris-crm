@@ -4299,14 +4299,18 @@ if (page === 'pedidos') await PedidosPage.render();
          * Re-renderiza dashboard e a página ativa.
          */
         async function refresh() {
-          await DashboardPage.render();
-          if (_currentPage === 'clientes') await ClientsPage.render();
-          if (_currentPage === 'agenda') await AgendaPage.render();
-          if (_currentPage === 'aniversarios') await AniversariosPage.render();
-          if (_currentPage === 'compras') await ComprasPage.render();
-if (_currentPage === 'produtos') await ProdutosPage.render();
-if (_currentPage === 'pedidos') await PedidosPage.render();
-        }
+  try {
+    await DashboardPage.render();
+    if (_currentPage === 'clientes') await ClientsPage.render();
+    if (_currentPage === 'agenda') await AgendaPage.render();
+    if (_currentPage === 'aniversarios') await AniversariosPage.render();
+    if (_currentPage === 'compras') await ComprasPage.render();
+    if (_currentPage === 'produtos') await ProdutosPage.render();
+    if (_currentPage === 'pedidos') await PedidosPage.render();
+  } catch(e) {
+    console.warn('[App] Erro no refresh:', e);
+  }
+}
 
         return { navigate, toggleSidebar, getCurrentPage, refresh };
       })();
@@ -5039,6 +5043,7 @@ if (_currentPage === 'pedidos') await PedidosPage.render();
   close();
   try {
     await DB.remove(id);
+await DB.getAll(true);
     await AtividadesPage.registrar('cliente_delete', `Cliente '${c ? c.nome : 'desconhecido'}' foi removido`, c);
     await App.refresh();
     DB.getAll(false).then((lista) => {
