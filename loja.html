@@ -648,6 +648,14 @@ function validarTelefone(tel) {
   return digits.length >= 10 && digits.length <= 11;
 }
 
+async function hashSenha(senha) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(senha);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}  
+
 function formatMoney(v) {
   return 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
@@ -695,14 +703,17 @@ if (cpf && cpf.length !== 3) {
   return;
 }
 
+const senhaHash = await hashSenha(senha);
+
 const { error } = await _sb.from('clientes_loja').insert({ 
   nome, 
   telefone: tel, 
   endereco: end, 
-  senha,
+  senha: senhaHash,
   empresa: empresa || null,
   cpf_iniciais: cpf || null
 });
+    
     if (error) {
       if (error.message.includes('unique')) showMsg('Este telefone já está cadastrado.');
       else showMsg('Erro ao criar conta: ' + error.message);
@@ -722,7 +733,8 @@ const { error } = await _sb.from('clientes_loja').insert({
     if (!validarTelefone(tel)) { document.getElementById('errLoginTel').textContent = 'Telefone inválido'; return; }
     if (!senha) { showMsg('Digite sua senha.'); return; }
 
-    const { data, error } = await _sb.from('clientes_loja').select('*').eq('telefone', tel).eq('senha', senha).single();
+    const senhaHash = await hashSenha(senha);
+    const { data, error } = await _sb.from('clientes_loja').select('*').eq('telefone', tel).eq('senha', senhaHash).single();
     if (error || !data) { showMsg('Telefone ou senha incorretos.'); return; }
 
     _cliente = data;
