@@ -456,10 +456,19 @@
         <span class="form-error" id="errCadTel"></span>
       </div>
       <div class="form-group">
-        <label class="form-label">Endereço</label>
-        <input class="form-input" id="cadEnd" type="text" placeholder="Rua, número, bairro"/>
-        <span class="form-error" id="errCadEnd"></span>
-      </div>
+  <label class="form-label">Endereço</label>
+  <input class="form-input" id="cadEnd" type="text" placeholder="Rua, número, bairro"/>
+  <span class="form-error" id="errCadEnd"></span>
+</div>
+<div class="form-group">
+  <label class="form-label">ID da Empresa</label>
+  <input class="form-input" id="cadEmpresa" type="text" placeholder="ID da sua empresa"/>
+</div>
+<div class="form-group">
+  <label class="form-label">CPF — 3 primeiros dígitos</label>
+  <input class="form-input" id="cadCpf" type="text" placeholder="Ex: 123" maxlength="3" oninput="this.value=this.value.replace(/\D/g,'')"/>
+  <span class="form-error" id="errCadCpf"></span>
+</div>
       <div class="form-group">
         <label class="form-label">Senha</label>
         <input class="form-input" id="cadSenha" type="password" placeholder="Mínimo 6 caracteres"/>
