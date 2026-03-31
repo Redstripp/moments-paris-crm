@@ -685,12 +685,14 @@ const Carrinho = (() => {
     const idx = _carrinho.findIndex(i => i.id === produto.id);
     if (idx >= 0) _carrinho[idx].qty++;
     else _carrinho.push({ ...produto, qty: 1 });
+    _salvarCarrinho();
     atualizarBadge();
     renderizar();
   }
 
   function remover(id) {
     _carrinho = _carrinho.filter(i => i.id !== id);
+    _salvarCarrinho();
     atualizarBadge();
     renderizar();
   }
@@ -700,8 +702,13 @@ const Carrinho = (() => {
     if (idx < 0) return;
     _carrinho[idx].qty += delta;
     if (_carrinho[idx].qty <= 0) _carrinho.splice(idx, 1);
+    _salvarCarrinho();
     atualizarBadge();
     renderizar();
+  }
+
+  function _salvarCarrinho() {
+    localStorage.setItem('loja_carrinho', JSON.stringify(_carrinho));
   }
 
   function atualizarBadge() {
