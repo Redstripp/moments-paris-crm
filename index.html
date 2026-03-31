@@ -7474,7 +7474,18 @@ const PedidosPage = (() => {
     await render();
   }
 
-  return { render, atualizarStatus };
+  async function excluirPedido(id) {
+    if (!confirm('Tem certeza que deseja excluir este pedido? Esta ação não pode ser desfeita.')) return;
+    const { error } = await _sb().from('pedidos').delete().eq('id', id);
+    if (error) {
+      Toast.show('Erro ao excluir pedido.', 'error');
+      return;
+    }
+    Toast.show('Pedido excluído com sucesso!', 'success');
+    await render();
+  }
+
+  return { render, atualizarStatus, excluirPedido };
 })();
   
   /* ============================================================
