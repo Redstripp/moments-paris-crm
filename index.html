@@ -3525,6 +3525,55 @@
 </section>
 
     <!-- ============================================================
+     MODAL: PRODUTO
+     ============================================================ -->
+<div class="modal-overlay" id="modal-produto" role="dialog" aria-modal="true">
+  <div class="modal" style="max-width: 480px">
+    <div class="modal__header">
+      <div class="modal__header-icon" aria-hidden="true">🛍️</div>
+      <div>
+        <h2 class="modal__title" id="modal-produto-title">Novo Produto</h2>
+        <p class="modal__subtitle">Preencha os dados do produto</p>
+      </div>
+      <button class="modal__close" onclick="ProdutoModal.fechar()">✕</button>
+    </div>
+    <div class="modal__body">
+      <div class="form-group">
+        <label class="form-label">Nome do Produto <span class="form-required">*</span></label>
+        <input type="text" class="form-input" id="fp-nome" placeholder="Ex: Perfume 50ml"/>
+        <span class="form-error" id="err-fp-nome"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preço <span class="form-required">*</span></label>
+        <input type="number" class="form-input" id="fp-preco" placeholder="0,00" min="0" step="0.01"/>
+        <span class="form-error" id="err-fp-preco"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL da Imagem</label>
+        <input type="text" class="form-input" id="fp-imagem" placeholder="https://..."/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descrição</label>
+        <input type="text" class="form-input" id="fp-desc" placeholder="Breve descrição do produto"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Disponível na loja?</label>
+        <select class="form-input" id="fp-disponivel">
+          <option value="true">✅ Sim</option>
+          <option value="false">❌ Não</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" onclick="ProdutoModal.fechar()">Cancelar</button>
+      <button class="btn btn--primary" onclick="ProdutoModal.salvar()" id="js-btn-save-produto">
+        Salvar Produto
+      </button>
+    </div>
+  </div>
+</div>
+
+    <!-- ============================================================
      MODAL: CONFIRMAR EXCLUSÃO DE COMPRA
      ============================================================ -->
     <div class="modal-overlay" id="modal-confirm-compra" role="dialog" aria-modal="true">
