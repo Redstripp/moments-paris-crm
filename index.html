@@ -3712,12 +3712,18 @@
         <input type="text" class="form-input" id="fp-desc" placeholder="Breve descrição do produto"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Disponível na loja?</label>
-        <select class="form-input" id="fp-disponivel">
-          <option value="true">✅ Sim</option>
-          <option value="false">❌ Não</option>
-        </select>
-      </div>
+  <label class="form-label">Categoria</label>
+  <select class="form-input" id="fp-categoria">
+    <option value="">Sem categoria</option>
+  </select>
+</div>
+<div class="form-group">
+  <label class="form-label">Disponível na loja?</label>
+  <select class="form-input" id="fp-disponivel">
+    <option value="true">✅ Sim</option>
+    <option value="false">❌ Não</option>
+  </select>
+</div>
     </div>
     <div class="modal__footer">
       <button class="btn btn--secondary" onclick="ProdutoModal.fechar()">Cancelar</button>
@@ -7422,7 +7428,17 @@ if (document.getElementById('fp-imagem-file')) document.getElementById('fp-image
       document.getElementById('fp-desc').value = '';
       document.getElementById('fp-disponivel').value = 'true';
     }
-    document.getElementById('modal-produto').classList.add('is-open');
+    const { data: cats } = await _sb().from('categorias').select('nome').order('ordem');
+const sel = document.getElementById('fp-categoria');
+sel.innerHTML = '<option value="">Sem categoria</option>';
+(cats || []).forEach(c => {
+  const opt = document.createElement('option');
+  opt.value = c.nome;
+  opt.textContent = c.nome;
+  sel.appendChild(opt);
+});
+if (id && data) sel.value = data.categoria || '';
+document.getElementById('modal-produto').classList.add('is-open');
   }
 
   function fechar() {
@@ -7448,7 +7464,8 @@ if (document.getElementById('fp-imagem-file')) document.getElementById('fp-image
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Salvando...';
 
-    const payload = { nome, preco, imagem_url: imagem_url || null, descricao: descricao || null, disponivel };
+    const categoria = document.getElementById('fp-categoria').value;
+    const payload = { nome, preco, imagem_url: imagem_url || null, descricao: descricao || null, disponivel, categoria: categoria || null };
 
     if (_editId) {
       await _sb().from('produtos').update(payload).eq('id', _editId);
