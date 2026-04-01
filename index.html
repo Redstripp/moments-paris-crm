@@ -7454,7 +7454,7 @@ INSTRUÇÕES:
     el.style.left   = origLeft + 'px';
     el.style.top    = origTop  + 'px';
     el.style.cursor = 'grabbing';
-    e.preventDefault();
+    // Não bloqueia o tap aqui — só bloqueia scroll quando mover
   }
 
   function onMove(e) {
@@ -7462,8 +7462,10 @@ INSTRUÇÕES:
     var coords = getCoords(e);
     var dx = coords.x - startX;
     var dy = coords.y - startY;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) hasMoved = true;
-    // Limita dentro da tela
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      hasMoved = true;
+      e.preventDefault(); // só bloqueia scroll quando realmente arrasta
+    }
     var maxX = window.innerWidth  - el.offsetWidth;
     var maxY = window.innerHeight - el.offsetHeight;
     el.style.left = Math.min(Math.max(0, origLeft + dx), maxX) + 'px';
