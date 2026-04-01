@@ -890,7 +890,8 @@
         background: var(--bg-surface);
         border: 1px solid var(--border-subtle);
         border-radius: var(--radius-lg);
-        overflow: hidden;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       .data-table {
@@ -1964,20 +1965,33 @@
 
       @media (max-width: 860px) {
         .modal {
-          width: calc(100% - 24px);
+          width: 100%;
           max-width: 100%;
           max-height: 92vh;
           border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+          animation: none;
         }
         .modal-overlay {
           padding: 0;
           align-items: flex-end;
         }
-        .data-table-wrap {
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
+        .modal__body {
+          padding: 16px;
         }
-      }
+        .modal__header {
+          padding: 16px;
+        }
+        .modal__footer {
+          padding: 14px 16px;
+          flex-direction: column;
+        }
+        .modal__footer .btn {
+          width: 100%;
+          justify-content: center;
+        }
+        .topbar__actions {
+          gap: 6px;
+        }
 
       @media (max-width: 560px) {
         .kpi-grid {
