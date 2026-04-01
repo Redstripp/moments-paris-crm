@@ -2645,6 +2645,13 @@
   Pedidos
   <span class="nav-item__badge nav-item__badge--warn" id="js-badge-pedidos">0</span>
 </div>
+
+        <div class="nav-item" data-page="categorias" role="button" tabindex="0" onclick="App.navigate('categorias', this)">
+  <svg class="nav-item__icon" viewBox="0 0 20 20" fill="currentColor">
+    <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+  </svg>
+  Categorias
+</div>
         
         <div class="sidebar__section-label" style="margin-top: 6px">Inteligência</div>
 
@@ -3597,6 +3604,54 @@
     <div class="table-empty">Carregando...</div>
   </div>
 </section>
+
+    <!-- PAGE: CATEGORIAS -->
+<section class="page" id="page-categorias" aria-label="Categorias">
+  <div class="page-header">
+    <div class="page-header__left">
+      <h2 class="page-header__title">Categorias</h2>
+      <p class="page-header__subtitle">Gerencie as categorias da loja</p>
+    </div>
+    <button class="btn btn--primary" onclick="CategoriasPage.abrirModal()">+ Nova Categoria</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div id="categorias-lista"></div>
+  </div>
+
+  <!-- Modal de categoria -->
+  <div id="modal-categoria" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:28px 24px;width:100%;max-width:420px;">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:20px;margin-bottom:20px;color:var(--gold);">
+        <span id="modal-cat-titulo">Nova Categoria</span>
+      </h2>
+      <input
+        id="modal-cat-nome"
+        type="text"
+        placeholder="Nome da categoria"
+        style="width:100%;padding:11px 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;margin-bottom:16px;"
+      />
+      <input
+        id="modal-cat-ordem"
+        type="number"
+        placeholder="Ordem (ex: 1, 2, 3...)"
+        style="width:100%;padding:11px 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;margin-bottom:20px;"
+      />
+      <div style="display:flex;gap:10px;">
+        <button onclick="CategoriasPage.fecharModal()"
+          style="flex:1;padding:11px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:transparent;color:var(--text-secondary);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
+          Cancelar
+        </button>
+        <button onclick="CategoriasPage.salvar()"
+          style="flex:1;padding:11px;border-radius:var(--radius-md);border:none;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#000;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">
+          Salvar
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+    
     <section class="page" id="page-atividades" aria-label="Registro de Atividades">
   <div class="page-header">
     <div>
@@ -7786,6 +7841,78 @@ await App.refresh();
 
     return { registrar, carregar, remover, recuperar, limparTodas };
   })();
+
+  const CategoriasPage = (() => {
+  let _editandoId = null;
+
+  function _sb() { return DB.getClient(); }
+
+  async function render() {
+    const lista = document.getElementById('categorias-lista');
+    if (!lista) return;
+    const { data, error } = await _sb().from('categorias').select('*').order('ordem');
+    if (error || !data || data.length === 0) {
+      lista.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px;">Nenhuma categoria cadastrada.</div>';
+      return;
+    }
+    lista.innerHTML = data.map(cat => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border-subtle);">
+        <div>
+          <span style="font-size:13px;font-weight:500;color:var(--text-primary);">${cat.nome}</span>
+          <span style="font-size:11px;color:var(--text-muted);margin-left:10px;">ordem: ${cat.ordem}</span>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="CategoriasPage.abrirModal('${cat.id}','${cat.nome.replace(/'/g,"\\'")}',${cat.ordem})"
+            style="padding:6px 14px;border-radius:6px;border:1px solid var(--border-default);background:transparent;color:var(--text-secondary);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+            ✏️ Editar
+          </button>
+          <button onclick="CategoriasPage.excluir('${cat.id}')"
+            style="padding:6px 14px;border-radius:6px;border:1px solid var(--danger);background:transparent;color:var(--danger);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+            🗑️ Excluir
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  function abrirModal(id = null, nome = '', ordem = '') {
+    _editandoId = id;
+    document.getElementById('modal-cat-titulo').textContent = id ? 'Editar Categoria' : 'Nova Categoria';
+    document.getElementById('modal-cat-nome').value = nome;
+    document.getElementById('modal-cat-ordem').value = ordem;
+    document.getElementById('modal-categoria').style.display = 'flex';
+  }
+
+  function fecharModal() {
+    _editandoId = null;
+    document.getElementById('modal-categoria').style.display = 'none';
+  }
+
+  async function salvar() {
+    const nome  = document.getElementById('modal-cat-nome').value.trim();
+    const ordem = parseInt(document.getElementById('modal-cat-ordem').value) || 0;
+    if (!nome) { Toast.show('Digite o nome da categoria.', 'error'); return; }
+
+    if (_editandoId) {
+      await _sb().from('categorias').update({ nome, ordem }).eq('id', _editandoId);
+      Toast.show('Categoria atualizada!', 'success');
+    } else {
+      await _sb().from('categorias').insert({ nome, ordem });
+      Toast.show('Categoria criada!', 'success');
+    }
+    fecharModal();
+    await render();
+  }
+
+  async function excluir(id) {
+    if (!confirm('Excluir esta categoria?')) return;
+    await _sb().from('categorias').delete().eq('id', id);
+    Toast.show('Categoria excluída!', 'success');
+    await render();
+  }
+
+  return { render, abrirModal, fecharModal, salvar, excluir };
+})();
+  
 </script>
     
 </body>
