@@ -7325,6 +7325,47 @@ INSTRUÇÕES:
   });
 
 })();
+
+  // ── DRAG DO PLAYER ──
+(function () {
+  var el = document.getElementById('mpPlayer');
+  var isDragging = false;
+  var startX, startY, origLeft, origTop;
+
+  el.addEventListener('mousedown', function (e) {
+    // Ignora cliques em botões e inputs
+    if (e.target.closest('button') || e.target.closest('input')) return;
+    isDragging = true;
+    var rect = el.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    origLeft = rect.left;
+    origTop  = rect.top;
+    el.style.right  = 'auto';
+    el.style.bottom = 'auto';
+    el.style.left   = origLeft + 'px';
+    el.style.top    = origTop  + 'px';
+    el.style.cursor = 'grabbing';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    if (!isDragging) return;
+    var dx = e.clientX - startX;
+    var dy = e.clientY - startY;
+    el.style.left = (origLeft + dx) + 'px';
+    el.style.top  = (origTop  + dy) + 'px';
+  });
+
+  document.addEventListener('mouseup', function () {
+    if (!isDragging) return;
+    isDragging = false;
+    el.style.cursor = 'grab';
+  });
+
+  el.style.cursor = 'grab';
+})();
+  
 </script>
 <script>
 /* ============================================================
