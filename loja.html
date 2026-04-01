@@ -64,7 +64,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
     }
     .auth-card {
       width: 100%;
@@ -73,6 +73,7 @@
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-lg);
       padding: 36px 32px;
+      box-sizing: border-box;
     }
     .auth-logo {
       text-align: center;
@@ -577,31 +578,64 @@
 
     @media (max-width: 600px) {
       /* Body */
-      .loja-body { padding: 16px; }
+      .loja-body { padding: 12px; }
+
+      /* Header */
+      .loja-header {
+        padding: 10px 12px;
+        gap: 8px;
+      }
+      .loja-header h1 { font-size: 17px; min-width: unset; }
+      .loja-header-actions { gap: 5px; }
+      .loja-header-actions #btnTema span#btnTemaLabel { display: none; }
+      .loja-header-actions #btnTema { padding: 8px 10px; }
+      .logout-btn { font-size: 10px; padding: 6px 10px; }
+      .carrinho-btn { font-size: 11px; padding: 7px 10px; }
+
+      /* Barra de filtros sticky */
+      #filtroStickyBar {
+        padding: 10px 12px !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        top: 56px !important;
+      }
+      #filtroStickyBar select,
+      #filtroStickyBar input {
+        width: 100% !important;
+        flex: unset !important;
+      }
 
       /* Produtos */
-      .produtos-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-      .produto-card__img { height: 150px; }
-      .produto-card__nome { font-size: 12px; }
-      .produto-card__preco { font-size: 18px; }
+      .produtos-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .produto-card__img { height: 130px; }
+      .produto-card__body { padding: 10px; }
+      .produto-card__nome { font-size: 11px; }
+      .produto-card__preco { font-size: 16px; margin-bottom: 8px; }
 
       /* Auth */
-      .auth-card { padding: 24px 18px; }
-
+      .auth-wrap { padding: 12px; align-items: flex-start; padding-top: 40px; }
+      .auth-card { padding: 24px 16px; border-radius: var(--radius-md); }
+      .auth-logo h1 { font-size: 22px; }
+      .auth-logo { margin-bottom: 20px; }
+      .auth-tabs { margin-bottom: 16px; }
+      .form-group { margin-bottom: 10px; }
       /* Modais */
       .modal-overlay { padding: 0; align-items: flex-end; }
       .modal {
+        width: 100%;
         max-width: 100%;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         max-height: 92vh;
       }
+      .modal__body { padding: 14px; }
+      .modal__header { padding: 14px; }
 
       /* Carrinho */
       .carrinho-item { gap: 8px; }
       .carrinho-item__nome { font-size: 12px; }
 
       /* Footer dos modais */
-      .modal__footer { flex-direction: column; }
+      .modal__footer { flex-direction: column; padding: 12px 14px; }
       .modal__footer .btn { width: 100%; }
 
       /* Histórico */
@@ -612,7 +646,7 @@
     @media (max-width: 380px) {
       /* Telas muito pequenas */
       .produtos-grid { grid-template-columns: 1fr; }
-      .loja-header h1 { font-size: 16px; }
+      .loja-header h1 { font-size: 15px; }
       .logout-btn { font-size: 10px; padding: 6px 8px; }
     }
   </style>
@@ -747,7 +781,7 @@
     </div>
   </header>
   <!-- 🆕 BARRA STICKY DE FILTROS -->
-  <div style="
+  <div id="filtroStickyBar" style="
     position: sticky;
     top: 64px;
     z-index: 99;
