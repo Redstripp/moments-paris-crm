@@ -1915,12 +1915,34 @@
         }
         .topbar {
           padding: 0 14px;
+          flex-wrap: nowrap;
+          overflow: hidden;
         }
         .topbar__page-title {
-          font-size: 18px;
+          font-size: 16px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          flex: 1;
+          min-width: 0;
         }
         .topbar__search {
           display: none;
+        }
+        .topbar__actions {
+          flex-shrink: 0;
+        }
+        .btn__label {
+          display: none;
+        }
+        .btn--novo-cliente {
+          padding: 9px;
+          min-width: 36px;
+          justify-content: center;
+        }
+        .kpi-grid {
+          grid-template-columns: 1fr 1fr !important;
+          gap: 10px;
         }
         .dashboard__panels {
           grid-template-columns: 1fr;
@@ -2803,7 +2825,7 @@
             />
           </div>
 
-          <button class="btn btn--primary" onclick="ClientModal.openAdd()" aria-label="Adicionar novo cliente">
+          <button class="btn btn--primary btn--novo-cliente" onclick="ClientModal.openAdd()" aria-label="Adicionar novo cliente">
             <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path
                 fill-rule="evenodd"
@@ -2811,7 +2833,7 @@
                 clip-rule="evenodd"
               />
             </svg>
-            Novo Cliente
+            <span class="btn__label">Novo Cliente</span>
           </button>
         </div>
       </header>
