@@ -695,6 +695,60 @@ function validarTelefone(tel) {
   return digits.length >= 10 && digits.length <= 11;
 }
 
+  const RateLimit = (() => {
+  const MAX_TENTATIVAS = 3;
+  const BLOQUEIO_MS = 20 * 60 * 1000; // 20 minutos
+
+  function _chave(tel) {
+    return `rate_limit_${tel}`;
+  }
+
+  function _getDados(tel) {
+    try {
+      const raw = localStorage.getItem(_chave(tel));
+      return raw ? JSON.parse(raw) : { tentativas: 0, bloqueadoAte: null };
+    } catch {
+      return { tentativas: 0, bloqueadoAte: null };
+    }
+  }
+
+  function _salvar(tel, dados) {
+    localStorage.setItem(_chave(tel), JSON.stringify(dados));
+  }
+
+  function estaBloqueado(tel) {
+    const dados = _getDados(tel);
+    if (!dados.bloqueadoAte) return false;
+    if (Date.now() < dados.bloqueadoAte) return true;
+    // Bloqueio expirou — limpa
+    _salvar(tel, { tentativas: 0, bloqueadoAte: null });
+    return false;
+  }
+
+  function tempoRestante(tel) {
+    const dados = _getDados(tel);
+    if (!dados.bloqueadoAte) return 0;
+    const restante = dados.bloqueadoAte - Date.now();
+    return restante > 0 ? Math.ceil(restante / 60000) : 0;
+  }
+
+  function registrarFalha(tel) {
+    const dados = _getDados(tel);
+    dados.tentativas += 1;
+    if (dados.tentativas >= MAX_TENTATIVAS) {
+      dados.bloqueadoAte = Date.now() + BLOQUEIO_MS;
+    }
+    _salvar(tel, dados);
+    return MAX_TENTATIVAS - dados.tentativas;
+  }
+
+  function resetar(tel) {
+    localStorage.removeItem(_chave(tel));
+  }
+
+  return { estaBloqueado, tempoRestante, registrarFalha, resetar };
+})();
+
 async function hashSenha(senha) {
   const encoder = new TextEncoder();
   const data = encoder.encode(senha);
@@ -780,10 +834,27 @@ const { error } = await _sb.from('clientes_loja').insert({
     if (!validarTelefone(tel)) { document.getElementById('errLoginTel').textContent = 'Telefone inválido'; return; }
     if (!senha) { showMsg('Digite sua senha.'); return; }
 
+    // Verifica bloqueio
+    if (RateLimit.estaBloqueado(tel)) {
+      const mins = RateLimit.tempoRestante(tel);
+      showMsg(`🔒 Muitas tentativas. Tente novamente em ${mins} minuto(s).`);
+      return;
+    }
+
     const senhaHash = await hashSenha(senha);
     const { data, error } = await _sb.from('clientes_loja').select('*').eq('telefone', tel).eq('senha', senhaHash).single();
-    if (error || !data) { showMsg('Telefone ou senha incorretos.'); return; }
 
+    if (error || !data) {
+      const restantes = RateLimit.registrarFalha(tel);
+      if (restantes <= 0) {
+        showMsg('🔒 Conta bloqueada por 20 minutos após muitas tentativas incorretas.');
+      } else {
+        showMsg(`Telefone ou senha incorretos. ${restantes} tentativa(s) restante(s).`);
+      }
+      return;
+    }
+
+    RateLimit.resetar(tel);
     _cliente = data;
     localStorage.setItem('loja_cliente', JSON.stringify(data));
     entrarNaLoja();
