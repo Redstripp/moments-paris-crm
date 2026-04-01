@@ -1092,6 +1092,8 @@ const Produtos = (() => {
   if (!sel) return;
   const { data } = await _sb.from('categorias').select('nome').order('ordem');
   if (!data) return;
+  // Limpa antes de popular para evitar duplicatas
+  sel.innerHTML = '<option value="">Todas as categorias</option>';
   data.forEach(cat => {
     const opt = document.createElement('option');
     opt.value = cat.nome;
