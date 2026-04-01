@@ -7519,6 +7519,7 @@ const ProdutosPage = (() => {
   }
 
   return { render, excluir, buscar };
+})();
 
 const ProdutoModal = (() => {
   let _editId = null;
@@ -7685,7 +7686,6 @@ const PedidosPage = (() => {
       .select('*')
       .gte('criado_em', seteDiasAtras.toISOString())
       .order('criado_em', { ascending: false });
-      _cache = data || [];
 
     if (error) { container.innerHTML = '<div class="table-empty">Erro ao carregar pedidos.</div>'; return; }
 
@@ -8013,6 +8013,7 @@ await App.refresh();
 
   const CategoriasPage = (() => {
   let _editandoId = null;
+  let _cache = [];  
 
   function _sb() { return DB.getClient(); }
 
@@ -8085,8 +8086,6 @@ await App.refresh();
     Toast.show('Categoria excluída!', 'success');
     await render();
   }
-
-  let _cache = [];
 
   function buscar(termo) {
     const lista = document.getElementById('categorias-lista');
