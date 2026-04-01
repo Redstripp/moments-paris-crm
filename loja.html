@@ -648,6 +648,46 @@
 
 <!-- ── LOJA ── -->
 <div class="loja-wrap" id="lojaWrap">
+<!-- Banner pedido separado -->
+<div id="bannerSeparado" style="
+  display:none;
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:9999;
+  background:linear-gradient(135deg,#1a1400,#2a1f00);
+  border-bottom:2px solid var(--gold);
+  padding:14px 24px;
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  animation: slideDown 0.4s ease;
+">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:1.6rem;">📦</span>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--gold);letter-spacing:0.05em;">
+        Seu pedido está separado!
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">
+        Já estamos preparando tudo para você. Em breve entraremos em contato.
+      </div>
+    </div>
+  </div>
+  <button onclick="document.getElementById('bannerSeparado').style.display='none'"
+    style="background:none;border:1px solid var(--border-default);border-radius:6px;
+    color:var(--text-muted);font-size:11px;padding:6px 12px;cursor:pointer;
+    font-family:'Montserrat',sans-serif;white-space:nowrap;">
+    ✕ Fechar
+  </button>
+</div>
+
+<style>
+@keyframes slideDown {
+  from { transform:translateY(-100%); opacity:0; }
+  to   { transform:translateY(0);     opacity:1; }
+}
+</style>
   <header class="loja-header">
     <h1>Moment's Paris</h1>
     <span class="loja-user" id="lojaUser"></span>
@@ -1253,6 +1293,7 @@ function entrarNaLoja() {
   document.getElementById('lojaUser').textContent = '👤 ' + _cliente.nome;
   Produtos.carregar();
   Produtos.carregarCategorias();
+  _verificarPedidoSeparado();
 }
 
 // Recupera sessão ao recarregar
@@ -1275,6 +1316,19 @@ function entrarNaLoja() {
     }
   }
 })();
+async function _verificarPedidoSeparado() {
+  const { data } = await _sb
+    .from('pedidos')
+    .select('id')
+    .eq('cliente_id', _cliente.id)
+    .eq('status', 'separado')
+    .limit(1);
+
+  if (data && data.length > 0) {
+    const banner = document.getElementById('bannerSeparado');
+    banner.style.display = 'flex';
+  }
+}  
 </script>
 </body>
 </html>
