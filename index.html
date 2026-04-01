@@ -3546,6 +3546,15 @@
       + Novo Produto
     </button>
   </div>
+  <div style="margin-bottom:16px;">
+    <input type="text" id="js-search-produtos"
+      placeholder="🔍 Buscar produto por nome..."
+      oninput="ProdutosPage.buscar(this.value)"
+      style="width:100%;padding:11px 16px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;"
+      onfocus="this.style.borderColor='var(--gold)'"
+      onblur="this.style.borderColor='var(--border-default)'"
+    />
+  </div>
   <div class="table-wrapper">
     <table class="data-table">
       <thead>
@@ -3614,6 +3623,15 @@
     </div>
     <button class="btn btn--primary" onclick="CategoriasPage.abrirModal()">+ Nova Categoria</button>
   </div>
+  <div style="margin-bottom:16px;">
+    <input type="text" id="js-search-categorias"
+      placeholder="🔍 Buscar categoria por nome..."
+      oninput="CategoriasPage.buscar(this.value)"
+      style="width:100%;padding:11px 16px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;"
+      onfocus="this.style.borderColor='var(--gold)'"
+      onblur="this.style.borderColor='var(--border-default)'"
+    />
+  </div>
 
   <div class="card" style="padding:0;overflow:hidden;">
     <div id="categorias-lista"></div>
@@ -3661,6 +3679,15 @@
     <button class="btn btn--ghost" onclick="AtividadesPage.limparTodas()" style="color:var(--danger);border-color:var(--danger)">
       Limpar tudo
     </button>
+  </div>
+  <div style="margin-bottom:16px;">
+    <input type="text" id="js-search-atividades"
+      placeholder="🔍 Buscar atividade..."
+      oninput="AtividadesPage.buscar(this.value)"
+      style="width:100%;padding:11px 16px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s;"
+      onfocus="this.style.borderColor='var(--gold)'"
+      onblur="this.style.borderColor='var(--border-default)'"
+    />
   </div>
 
   <div class="card" style="padding: 0; overflow: hidden;">
