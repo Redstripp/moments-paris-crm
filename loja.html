@@ -174,13 +174,14 @@
     .loja-header {
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border-subtle);
-      padding: 16px 28px;
+      padding: 12px 20px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 10px;
       position: sticky;
       top: 0;
       z-index: 100;
+      flex-wrap: wrap;
     }
     .loja-header h1 {
       font-family: 'Cormorant Garamond', serif;
@@ -189,10 +190,18 @@
       color: var(--gold);
       letter-spacing: 0.1em;
       flex: 1;
+      min-width: 120px;
     }
     .loja-user {
       font-size: 11px;
       color: var(--text-muted);
+      display: none;
+    }
+    .loja-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
     }
     .carrinho-btn {
       position: relative;
@@ -471,8 +480,44 @@
     }
 
     @media (max-width: 600px) {
+      /* Body */
       .loja-body { padding: 16px; }
+
+      /* Produtos */
       .produtos-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+      .produto-card__img { height: 150px; }
+      .produto-card__nome { font-size: 12px; }
+      .produto-card__preco { font-size: 18px; }
+
+      /* Auth */
+      .auth-card { padding: 24px 18px; }
+
+      /* Modais */
+      .modal-overlay { padding: 0; align-items: flex-end; }
+      .modal {
+        max-width: 100%;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        max-height: 92vh;
+      }
+
+      /* Carrinho */
+      .carrinho-item { gap: 8px; }
+      .carrinho-item__nome { font-size: 12px; }
+
+      /* Footer dos modais */
+      .modal__footer { flex-direction: column; }
+      .modal__footer .btn { width: 100%; }
+
+      /* Histórico */
+      .historico-item__header { flex-direction: column; align-items: flex-start; }
+      .historico-item__total { font-size: 18px; }
+    }
+
+    @media (max-width: 380px) {
+      /* Telas muito pequenas */
+      .produtos-grid { grid-template-columns: 1fr; }
+      .loja-header h1 { font-size: 16px; }
+      .logout-btn { font-size: 10px; padding: 6px 8px; }
     }
   </style>
 </head>
@@ -550,8 +595,10 @@
       🛍️ Carrinho
       <span class="carrinho-badge" id="carrinhoBadge">0</span>
     </button>
-    <button class="logout-btn" onclick="Historico.abrir()">📋 Meus Pedidos</button>
-    <button class="logout-btn" onclick="Auth.logout()">Sair</button>
+    <div class="loja-header-actions">
+      <button class="logout-btn" onclick="Historico.abrir()">📋 Meus Pedidos</button>
+      <button class="logout-btn" onclick="Auth.logout()">Sair</button>
+    </div>
   </header>
   <div class="loja-body">
     <div style="margin-bottom:20px;">
