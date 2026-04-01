@@ -7418,6 +7418,7 @@ INSTRUÇÕES:
    ============================================================ */
 const ProdutosPage = (() => {
   let _editId = null;
+  let _cache = [];
 
   function _sb() { return DB.getClient(); }
 
@@ -7476,8 +7477,6 @@ const ProdutosPage = (() => {
     await render();
     Toast.show('Produto excluído.', 'info');
   }
-
-  let _cache = [];
 
   function buscar(termo) {
     const tbody = document.getElementById('js-produtos-tbody');
