@@ -1930,6 +1930,33 @@
         }
       }
 
+      /* Mobile overlay da sidebar */
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 199;
+      }
+      .sidebar-overlay.is-open { display: block; }
+
+      @media (max-width: 860px) {
+        .modal {
+          width: calc(100% - 24px);
+          max-width: 100%;
+          max-height: 92vh;
+          border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .modal-overlay {
+          padding: 0;
+          align-items: flex-end;
+        }
+        .data-table-wrap {
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+
       @media (max-width: 560px) {
         .kpi-grid {
           grid-template-columns: 1fr 1fr;
@@ -2531,6 +2558,7 @@
     <!-- ============================================================
      SIDEBAR
      ============================================================ -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="App.toggleSidebar()"></div>
     <aside class="sidebar" id="js-sidebar" role="complementary" aria-label="Menu de navegação">
       <div class="sidebar__logo">
         <div class="sidebar__logo-mark" aria-hidden="true">
@@ -4486,8 +4514,10 @@
         function toggleSidebar() {
           const sidebar = document.getElementById('js-sidebar');
           const toggle = document.getElementById('js-mobile-toggle');
+          const overlay = document.getElementById('sidebarOverlay');
           const isOpen = sidebar.classList.toggle('is-open');
           toggle.setAttribute('aria-expanded', String(isOpen));
+          overlay.classList.toggle('is-open', isOpen);
         }
 
         function getCurrentPage() {
