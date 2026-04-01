@@ -1318,18 +1318,18 @@ const Historico = (() => {
   
 // ── BOOT ──
 function entrarNaLoja() {
+  // Restaura tema ANTES de mostrar a loja
+  const temaSalvo = localStorage.getItem('loja_tema') || 'dark';
+  document.documentElement.setAttribute('data-theme', temaSalvo);
+  document.getElementById('btnTemaIcone').textContent = temaSalvo === 'light' ? '☀️' : '🌙';
+  document.getElementById('btnTemaLabel').textContent  = temaSalvo === 'light' ? 'Tema Claro' : 'Tema Escuro';
+
   document.getElementById('authWrap').style.display = 'none';
   document.getElementById('lojaWrap').style.display = 'flex';
   document.getElementById('lojaUser').textContent = '👤 ' + _cliente.nome;
   Produtos.carregar();
   Produtos.carregarCategorias();
   _verificarPedidoSeparado();
-
-  // Restaura tema salvo
-  const temaSalvo = localStorage.getItem('loja_tema') || 'dark';
-  document.documentElement.setAttribute('data-theme', temaSalvo);
-  document.getElementById('btnTemaIcone').textContent = temaSalvo === 'light' ? '☀️' : '🌙';
-  document.getElementById('btnTemaLabel').textContent  = temaSalvo === 'light' ? 'Tema Claro' : 'Tema Escuro';
 }
 
 // Recupera sessão ao recarregar
