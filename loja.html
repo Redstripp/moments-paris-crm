@@ -715,12 +715,15 @@
     </button>
     <div class="loja-header-actions">
   <button id="btnTema" onclick="alternarTema()"
-    style="background:var(--bg-raised);border:1px solid var(--border-default);
-    border-radius:var(--radius-md);padding:8px 12px;color:var(--text-secondary);
-    font-size:16px;cursor:pointer;transition:all 0.2s;line-height:1;"
-    title="Alternar tema">
-    🌙
-  </button>
+  style="background:var(--bg-raised);border:1px solid var(--border-default);
+  border-radius:var(--radius-md);padding:8px 12px;color:var(--text-secondary);
+  font-size:11px;font-weight:600;font-family:'Montserrat',sans-serif;
+  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;
+  letter-spacing:0.05em;"
+  title="Alternar tema">
+  <span id="btnTemaIcone">🌙</span>
+  <span id="btnTemaLabel">Tema Claro</span>
+</button>
       <button class="logout-btn" onclick="Historico.abrir()">📋 Meus Pedidos</button>
       <button class="logout-btn" onclick="Auth.logout()">Sair</button>
     </div>
@@ -1353,7 +1356,27 @@ async function _verificarPedidoSeparado() {
     const banner = document.getElementById('bannerSeparado');
     banner.style.display = 'flex';
   }
-}  
+} 
+  function alternarTema() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const novoTema = isLight ? 'dark' : 'light';
+  
+  document.documentElement.setAttribute('data-theme', novoTema);
+  localStorage.setItem('loja_tema', novoTema);
+
+  document.getElementById('btnTemaIcone').textContent = novoTema === 'light' ? '☀️' : '🌙';
+  document.getElementById('btnTemaLabel').textContent  = novoTema === 'light' ? 'Tema Escuro' : 'Tema Claro';
+}
+
+// Restaura tema salvo ao carregar
+(function () {
+  const temaSalvo = localStorage.getItem('loja_tema');
+  if (temaSalvo === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.getElementById('btnTemaIcone').textContent = '☀️';
+    document.getElementById('btnTemaLabel').textContent  = 'Tema Escuro';
+  }
+})();
 </script>
 </body>
 </html>
