@@ -7436,10 +7436,7 @@ INSTRUÇÕES:
       audio.removeEventListener('canplay', restaurar);
       if (salvo.time > 0) audio.currentTime = salvo.time;
       started = true;
-      audio.play().catch(function () {
-        // Bloqueado — toca no primeiro clique
-        started = false;
-      });
+      audio.play().catch(function () { started = false; });
     });
   } else {
     loadTrack(currentIndex);
