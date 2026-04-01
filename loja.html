@@ -1323,6 +1323,12 @@ function entrarNaLoja() {
   Produtos.carregar();
   Produtos.carregarCategorias();
   _verificarPedidoSeparado();
+
+  // Restaura tema salvo
+  const temaSalvo = localStorage.getItem('loja_tema') || 'dark';
+  document.documentElement.setAttribute('data-theme', temaSalvo);
+  document.getElementById('btnTemaIcone').textContent = temaSalvo === 'light' ? '☀️' : '🌙';
+  document.getElementById('btnTemaLabel').textContent  = temaSalvo === 'light' ? 'Tema Escuro' : 'Tema Claro';
 }
 
 // Recupera sessão ao recarregar
@@ -1369,17 +1375,6 @@ async function _verificarPedidoSeparado() {
   document.getElementById('btnTemaLabel').textContent  = novoTema === 'light' ? 'Tema Claro' : 'Tema Escuro';
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  const temaSalvo = localStorage.getItem('loja_tema') || 'dark';
-  document.documentElement.setAttribute('data-theme', temaSalvo);
-  if (temaSalvo === 'light') {
-    document.getElementById('btnTemaIcone').textContent = '☀️';
-    document.getElementById('btnTemaLabel').textContent  = 'Tema Escuro';
-  } else {
-    document.getElementById('btnTemaIcone').textContent = '🌙';
-    document.getElementById('btnTemaLabel').textContent  = 'Tema Claro';
-  }
-});
 </script>
 </body>
 </html>
