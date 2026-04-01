@@ -4431,8 +4431,9 @@
           if (page === 'aniversarios') await AniversariosPage.render();
           if (page === 'compras') await ComprasPage.render();
           if (page === 'atividades') await AtividadesPage.carregar();
-if (page === 'produtos') await ProdutosPage.render();
-if (page === 'pedidos') await PedidosPage.render();
+          if (page === 'produtos') await ProdutosPage.render();
+          if (page === 'pedidos') await PedidosPage.render();
+          if (page === 'categorias') await CategoriasPage.render();
 
           // Fecha sidebar no mobile
           if (window.innerWidth <= 860) {
