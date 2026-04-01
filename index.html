@@ -7405,13 +7405,54 @@ INSTRUÇÕES:
   });
 
   audio.volume = 0.7;
-  
-  document.getElementById('mpPlayer').classList.add('minimized');
-  
-  // Carrega a primeira faixa
-  loadTrack(currentIndex);
 
-  // Toca no primeiro clique em qualquer lugar da página
+  document.getElementById('mpPlayer').classList.add('minimized');
+
+  // ── PERSISTÊNCIA ──
+  var MP_KEY = 'mp_state';
+
+  function salvarEstado() {
+    localStorage.setItem(MP_KEY, JSON.stringify({
+      index: currentIndex,
+      time:  audio.currentTime,
+      tocando: !audio.paused
+    }));
+  }
+
+  // Salva a cada 2 segundos enquanto toca
+  audio.addEventListener('timeupdate', function () {
+    if (Math.floor(audio.currentTime) % 2 === 0) salvarEstado();
+  });
+
+  // Salva ao trocar de música
+  audio.addEventListener('ended', salvarEstado);
+
+  // Salva ao fechar/atualizar a página
+  window.addEventListener('beforeunload', salvarEstado);
+
+  // ── RESTAURAR ESTADO ──
+  var salvo = null;
+  try { salvo = JSON.parse(localStorage.getItem(MP_KEY)); } catch(e) {}
+
+  if (salvo && salvo.index >= 0 && salvo.index < PLAYLIST.length) {
+    currentIndex = salvo.index;
+    loadTrack(currentIndex);
+
+    // Pula para o tempo salvo assim que o áudio carregar
+    audio.addEventListener('canplay', function restaurar() {
+      audio.removeEventListener('canplay', restaurar);
+      if (salvo.time > 0) audio.currentTime = salvo.time;
+      if (salvo.tocando) {
+        audio.play().catch(function(){});
+        started = true;
+      }
+    });
+  } else {
+    // Nenhum estado salvo — comportamento original
+    loadTrack(currentIndex);
+  }
+
+  // Toca no primeiro clique se o autoplay foi bloqueado
   function startOnFirstClick() {
     if (started) return;
     started = true;
@@ -7420,10 +7461,8 @@ INSTRUÇÕES:
   }
   document.addEventListener('click', startOnFirstClick);
 
-  // Tenta autoplay direto (funciona se o Edge já permitiu)
-  audio.play().catch(function () {
-    // Bloqueado pelo navegador — vai tocar no primeiro clique
-  });
+  // Tenta autoplay direto
+  audio.play().catch(function () {});
 
 })();
 
