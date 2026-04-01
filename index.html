@@ -7419,15 +7419,10 @@ INSTRUÇÕES:
     }));
   }
 
-  // Salva a cada 2 segundos enquanto toca
   audio.addEventListener('timeupdate', function () {
     if (Math.floor(audio.currentTime) % 2 === 0) salvarEstado();
   });
 
-  // Salva ao trocar de música
-  audio.addEventListener('ended', salvarEstado);
-
-  // Salva ao fechar/atualizar a página
   window.addEventListener('beforeunload', salvarEstado);
 
   // ── RESTAURAR ESTADO ──
@@ -7437,19 +7432,18 @@ INSTRUÇÕES:
   if (salvo && salvo.index >= 0 && salvo.index < PLAYLIST.length) {
     currentIndex = salvo.index;
     loadTrack(currentIndex);
-
-    // Pula para o tempo salvo assim que o áudio carregar
     audio.addEventListener('canplay', function restaurar() {
       audio.removeEventListener('canplay', restaurar);
       if (salvo.time > 0) audio.currentTime = salvo.time;
-      if (salvo.tocando) {
-        audio.play().catch(function(){});
-        started = true;
-      }
+      started = true;
+      audio.play().catch(function () {
+        // Bloqueado — toca no primeiro clique
+        started = false;
+      });
     });
   } else {
-    // Nenhum estado salvo — comportamento original
     loadTrack(currentIndex);
+    audio.play().catch(function () {});
   }
 
   // Toca no primeiro clique se o autoplay foi bloqueado
@@ -7460,9 +7454,6 @@ INSTRUÇÕES:
     document.removeEventListener('click', startOnFirstClick);
   }
   document.addEventListener('click', startOnFirstClick);
-
-  // Tenta autoplay direto
-  audio.play().catch(function () {});
 
 })();
 
