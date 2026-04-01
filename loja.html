@@ -1368,15 +1368,12 @@ async function _verificarPedidoSeparado() {
   document.getElementById('btnTemaLabel').textContent  = novoTema === 'light' ? 'Tema Claro' : 'Tema Escuro';
 }
 
-// Restaura tema salvo ao carregar
-(function () {
-  const temaSalvo = localStorage.getItem('loja_tema');
-  if (temaSalvo === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-    document.getElementById('btnTemaIcone').textContent = '☀️';
-    document.getElementById('btnTemaLabel').textContent  = 'Tema Escuro';
-  }
-})();
+const temaSalvo = localStorage.getItem('loja_tema');
+if (temaSalvo === 'light') {
+  document.documentElement.setAttribute('data-theme', 'light');
+  document.getElementById('btnTemaIcone').textContent = '☀️';
+  document.getElementById('btnTemaLabel').textContent  = 'Tema Escuro';
+}
 </script>
 </body>
 </html>
