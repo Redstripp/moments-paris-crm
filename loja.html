@@ -582,27 +582,40 @@
 
       /* Header */
       .loja-header {
-        padding: 10px 12px;
-        gap: 8px;
+        padding: 8px 12px;
+        gap: 6px;
+        flex-wrap: nowrap;
       }
-      .loja-header h1 { font-size: 17px; min-width: unset; }
-      .loja-header-actions { gap: 5px; }
+      .loja-header h1 {
+        font-size: 15px;
+        min-width: unset;
+        flex-shrink: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .loja-header-actions {
+        gap: 4px;
+        flex-shrink: 0;
+      }
       .loja-header-actions #btnTema span#btnTemaLabel { display: none; }
-      .loja-header-actions #btnTema { padding: 8px 10px; }
-      .logout-btn { font-size: 10px; padding: 6px 10px; }
-      .carrinho-btn { font-size: 11px; padding: 7px 10px; }
+      .loja-header-actions #btnTema { padding: 7px 8px; font-size: 14px; }
+      .logout-btn { font-size: 10px; padding: 5px 8px; }
+      .carrinho-btn { font-size: 11px; padding: 6px 8px; }
+      .loja-user { display: none !important; }
 
       /* Barra de filtros sticky */
       #filtroStickyBar {
-        padding: 10px 12px !important;
+        padding: 8px 12px !important;
         flex-direction: column !important;
         gap: 8px !important;
-        top: 56px !important;
+        top: 50px !important;
       }
       #filtroStickyBar select,
       #filtroStickyBar input {
         width: 100% !important;
         flex: unset !important;
+        box-sizing: border-box !important;
       }
 
       /* Produtos */
