@@ -7571,10 +7571,12 @@ const PedidosPage = (() => {
           // Exibe toast
           Toast.show(`🛍️ Novo pedido de ${nome} — R$ ${total}`, 'success');
 
-          // Atualiza a aba de pedidos se estiver aberta
+          // Atualiza a aba de pedidos ou o dashboard dependendo do que estiver aberto
           const paginaAtiva = document.querySelector('.page.is-active');
           if (paginaAtiva && paginaAtiva.id === 'page-pedidos') {
             await PedidosPage.render();
+          } else if (paginaAtiva && paginaAtiva.id === 'page-dashboard') {
+            await DashboardPage.render();
           } else {
             // Atualiza só o badge
             const badge = document.getElementById('js-badge-pedidos');
