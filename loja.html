@@ -1328,7 +1328,7 @@ function entrarNaLoja() {
   const temaSalvo = localStorage.getItem('loja_tema') || 'dark';
   document.documentElement.setAttribute('data-theme', temaSalvo);
   document.getElementById('btnTemaIcone').textContent = temaSalvo === 'light' ? '☀️' : '🌙';
-  document.getElementById('btnTemaLabel').textContent  = temaSalvo === 'light' ? 'Tema Escuro' : 'Tema Claro';
+  document.getElementById('btnTemaLabel').textContent  = temaSalvo === 'light' ? 'Tema Claro' : 'Tema Escuro';
 }
 
 // Recupera sessão ao recarregar
