@@ -4431,6 +4431,14 @@
           _currentPage = page;
           document.getElementById('js-topbar-title').textContent = PAGE_TITLES[page] || page;
 
+          // Mostra/oculta busca e botão de cliente conforme a aba
+          const acoesTopbar = document.querySelector('.topbar__actions');
+          if (page === 'clientes') {
+            acoesTopbar.style.display = 'flex';
+          } else {
+            acoesTopbar.style.display = 'none';
+          }
+
           // Renderiza módulo correto
           if (page === 'clientes') await ClientsPage.render();
           if (page === 'agenda') await AgendaPage.render();
