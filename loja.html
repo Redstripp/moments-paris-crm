@@ -397,7 +397,25 @@
       border-bottom: 1px solid var(--border-subtle);
     }
     .carrinho-item:last-child { border-bottom: none; }
-    .carrinho-item__nome { flex: 1; font-size: 13px; font-weight: 500; }
+    .carrinho-item__foto {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .carrinho-item__foto img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .carrinho-item__nome { font-size: 13px; font-weight: 500; }
     .carrinho-item__preco { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
     .qty-controls { display: flex; align-items: center; gap: 8px; }
     .qty-btn {
@@ -989,8 +1007,7 @@ const Carrinho = (() => {
   function alterarQty(id, delta) {
     const idx = _carrinho.findIndex(i => i.id === id);
     if (idx < 0) return;
-    _carrinho[idx].qty += delta;
-    if (_carrinho[idx].qty <= 0) _carrinho.splice(idx, 1);
+    _carrinho[idx].qty = Math.max(1, _carrinho[idx].qty + delta);
     _salvarCarrinho();
     atualizarBadge();
     renderizar();
@@ -1014,6 +1031,11 @@ const Carrinho = (() => {
     const total = _carrinho.reduce((s, i) => s + i.preco * i.qty, 0);
     body.innerHTML = _carrinho.map(item => `
       <div class="carrinho-item">
+        <div class="carrinho-item__foto">
+          ${item.imagem_url
+            ? `<img src="${item.imagem_url}" alt="${item.nome}" onerror="this.parentElement.innerHTML='🛍️'"/>`
+            : '🛍️'}
+        </div>
         <div style="flex:1">
           <div class="carrinho-item__nome">${item.nome}</div>
           <div class="carrinho-item__preco">${formatMoney(item.preco)} cada</div>
