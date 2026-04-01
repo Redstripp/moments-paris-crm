@@ -295,6 +295,48 @@
     }
     .btn--add:hover { opacity: 0.85; }
 
+    .produto-qty-control {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .produto-qty-control .qty-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border-default);
+      background: var(--bg-overlay);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .produto-qty-control .qty-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .produto-qty-num {
+      font-size: 14px;
+      font-weight: 600;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .produto-qty-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
     /* ── CARRINHO MODAL ── */
     .modal-overlay {
       position: fixed;
@@ -912,7 +954,13 @@ const Produtos = (() => {
           <div class="produto-card__nome">${p.nome}</div>
           ${p.descricao ? `<div class="produto-card__desc">${p.descricao}</div>` : ''}
           <div class="produto-card__preco">${formatMoney(p.preco)}</div>
-          <button class="btn--add" onclick='Carrinho.adicionar(${JSON.stringify(p)})'>+ Adicionar</button>
+          <div class="produto-qty-control">
+            <span class="produto-qty-label">Quantidade:</span>
+            <button class="qty-btn" onclick="this.parentElement.querySelector('.produto-qty-num').textContent = Math.max(1, Number(this.parentElement.querySelector('.produto-qty-num').textContent) - 1)">−</button>
+            <span class="produto-qty-num">1</span>
+            <button class="qty-btn" onclick="this.parentElement.querySelector('.produto-qty-num').textContent = Number(this.parentElement.querySelector('.produto-qty-num').textContent) + 1">+</button>
+          </div>
+          <button class="btn--add" onclick='Carrinho.adicionar(${JSON.stringify(p)}, Number(this.previousElementSibling.querySelector(".produto-qty-num").textContent))'>+ Adicionar</button>
         </div>
       </div>`).join('');
   }
@@ -922,10 +970,10 @@ const Produtos = (() => {
 
 // ── CARRINHO ──
 const Carrinho = (() => {
-  function adicionar(produto) {
+  function adicionar(produto, qty = 1) {
     const idx = _carrinho.findIndex(i => i.id === produto.id);
-    if (idx >= 0) _carrinho[idx].qty++;
-    else _carrinho.push({ ...produto, qty: 1 });
+    if (idx >= 0) _carrinho[idx].qty += qty;
+    else _carrinho.push({ ...produto, qty });
     _salvarCarrinho();
     atualizarBadge();
     renderizar();
