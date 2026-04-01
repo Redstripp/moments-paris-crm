@@ -7852,6 +7852,11 @@ await App.refresh();
     const lista = document.getElementById('categorias-lista');
     if (!lista) return;
     const { data, error } = await _sb().from('categorias').select('*').order('ordem');
+const { data: produtos } = await _sb().from('produtos').select('categoria');
+const contagem = {};
+(produtos || []).forEach(p => {
+  if (p.categoria) contagem[p.categoria] = (contagem[p.categoria] || 0) + 1;
+});
     if (error || !data || data.length === 0) {
       lista.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px;">Nenhuma categoria cadastrada.</div>';
       return;
@@ -7861,6 +7866,7 @@ await App.refresh();
         <div>
           <span style="font-size:13px;font-weight:500;color:var(--text-primary);">${cat.nome}</span>
           <span style="font-size:11px;color:var(--text-muted);margin-left:10px;">ordem: ${cat.ordem}</span>
+          <span style="font-size:11px;color:var(--gold);margin-left:10px;">📦 ${contagem[cat.nome] || 0} produto(s)</span>
         </div>
         <div style="display:flex;gap:8px;">
           <button onclick="CategoriasPage.abrirModal('${cat.id}','${cat.nome.replace(/'/g,"\\'")}',${cat.ordem})"
