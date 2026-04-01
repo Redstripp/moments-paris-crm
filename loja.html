@@ -746,23 +746,35 @@
       <button class="logout-btn" onclick="Auth.logout()">Sair</button>
     </div>
   </header>
+  <!-- 🆕 BARRA STICKY DE FILTROS -->
+  <div style="
+    position: sticky;
+    top: 64px;
+    z-index: 99;
+    background: var(--bg-base);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 12px 32px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  ">
+    <select
+      id="filtroCategorias"
+      onchange="Produtos.filtrarCategoria(this.value)"
+      style="padding:12px 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;cursor:pointer;flex-shrink:0;"
+    >
+      <option value="">Todas as categorias</option>
+    </select>
+    <input
+      type="text"
+      id="buscaProdutos"
+      placeholder="🔍 Buscar produto..."
+      oninput="Produtos.buscar(this.value)"
+      style="flex:1;padding:12px 16px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;"
+    />
+  </div>
+
   <div class="loja-body">
-    <div style="margin-bottom:20px;display:flex;gap:10px;align-items:center;">
-      <select
-        id="filtroCategorias"
-        onchange="Produtos.filtrarCategoria(this.value)"
-        style="padding:12px 14px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;cursor:pointer;flex-shrink:0;"
-      >
-        <option value="">Todas as categorias</option>
-      </select>
-      <input
-        type="text"
-        id="buscaProdutos"
-        placeholder="🔍 Buscar produto..."
-        oninput="Produtos.buscar(this.value)"
-        style="flex:1;padding:12px 16px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;"
-      />
-    </div>
     <div class="produtos-grid" id="produtosGrid">
       <div class="empty-state">Carregando produtos...</div>
     </div>
