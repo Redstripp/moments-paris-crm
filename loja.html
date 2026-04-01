@@ -255,11 +255,27 @@
       justify-content: center;
     }
     .loja-body { flex: 1; padding: 28px 32px; max-width: 1200px; margin: 0 auto; width: 100%; }
-    .produtos-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 20px;
+
+    .btn-add {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: #000;
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
+    .btn-add:hover { opacity: 0.85; }
+        
+        .produtos-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          gap: 20px;
+        }
     .produto-card {
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
