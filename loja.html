@@ -1369,11 +1369,14 @@ async function _verificarPedidoSeparado() {
   document.getElementById('btnTemaLabel').textContent  = novoTema === 'light' ? 'Tema Claro' : 'Tema Escuro';
 }
 
-const temaSalvo = localStorage.getItem('loja_tema');
+const temaSalvo = localStorage.getItem('loja_tema') || 'dark';
+document.documentElement.setAttribute('data-theme', temaSalvo);
 if (temaSalvo === 'light') {
-  document.documentElement.setAttribute('data-theme', 'light');
   document.getElementById('btnTemaIcone').textContent = '☀️';
   document.getElementById('btnTemaLabel').textContent  = 'Tema Escuro';
+} else {
+  document.getElementById('btnTemaIcone').textContent = '🌙';
+  document.getElementById('btnTemaLabel').textContent  = 'Tema Claro';
 }
 </script>
 </body>
