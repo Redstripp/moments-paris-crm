@@ -996,7 +996,7 @@ function filtrarCategoria(categoria) {
 
   function _renderizar(lista) {
     document.getElementById('produtosGrid').innerHTML = lista.map(p => `
-      <div class="produto-card" data-nome="${p.nome.toLowerCase()}" data-categoria="${p.categoria || ''}
+      <div class="produto-card" data-nome="${p.nome.toLowerCase()}" data-categoria="${p.categoria || ''}">
         <div class="produto-card__img">
           ${p.imagem_url ? `<img src="${p.imagem_url}" alt="${p.nome}" onerror="this.parentElement.innerHTML='🛍️'"/>` : '🛍️'}
         </div>
