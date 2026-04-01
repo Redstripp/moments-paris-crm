@@ -6776,6 +6776,7 @@ INSTRUÇÕES:
                     IAModule.refreshContext(lista);
                   });
                   IAModule.init();
+                  RealtimePedidos.iniciar();
                   hideLoader();
                 } catch (e) {
                   console.error('[APP] Erro ao inicializar:', e);
@@ -7538,6 +7539,53 @@ const PedidosPage = (() => {
   }
 
   return { render, filtrar, atualizarStatus, excluirPedido };
+})();
+
+  const RealtimePedidos = (() => {
+  function iniciar() {
+    const sb = DB.getClient();
+
+    sb.channel('pedidos-novos')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'pedidos' },
+        async (payload) => {
+          const novo = payload.new;
+          const nome = novo.cliente_nome || 'Cliente';
+          const total = Number(novo.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+          // Toca som de notificação
+          try {
+            const ctx = new AudioContext();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.4);
+          } catch (e) {}
+
+          // Exibe toast
+          Toast.show(`🛍️ Novo pedido de ${nome} — R$ ${total}`, 'success');
+
+          // Atualiza a aba de pedidos se estiver aberta
+          const paginaAtiva = document.querySelector('.page.is-active');
+          if (paginaAtiva && paginaAtiva.id === 'page-pedidos') {
+            await PedidosPage.render();
+          } else {
+            // Atualiza só o badge
+            const badge = document.getElementById('js-badge-pedidos');
+            if (badge) badge.textContent = Number(badge.textContent || 0) + 1;
+          }
+        }
+      )
+      .subscribe();
+  }
+
+  return { iniciar };
 })();
   
   /* ============================================================
