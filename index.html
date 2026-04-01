@@ -7438,7 +7438,7 @@ sel.innerHTML = '<option value="">Sem categoria</option>';
   opt.textContent = c.nome;
   sel.appendChild(opt);
 });
-if (id && data) sel.value = data.categoria || '';
+if (id && typeof data !== 'undefined' && data) sel.value = data.categoria || '';
 document.getElementById('modal-produto').classList.add('is-open');
   }
 
