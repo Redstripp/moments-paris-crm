@@ -7,6 +7,24 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
+    [data-theme="light"] {
+  --gold: #8b6914;
+  --gold-light: #c9a84c;
+  --gold-dark: #5a4409;
+  --gold-glow: rgba(139,105,20,0.15);
+  --bg-base: #f5f0e8;
+  --bg-surface: #ffffff;
+  --bg-raised: #ede8df;
+  --bg-overlay: #e0d9ce;
+  --text-primary: #1a1610;
+  --text-secondary: #5a5248;
+  --text-muted: #9a8f7a;
+  --border-subtle: rgba(139,105,20,0.15);
+  --border-default: rgba(139,105,20,0.25);
+  --border-strong: rgba(139,105,20,0.5);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+  --shadow-gold: 0 4px 24px rgba(139,105,20,0.2);
+}
     :root {
       --gold: #c9a84c;
       --gold-light: #e2c47e;
@@ -696,6 +714,13 @@
       <span class="carrinho-badge" id="carrinhoBadge">0</span>
     </button>
     <div class="loja-header-actions">
+  <button id="btnTema" onclick="alternarTema()"
+    style="background:var(--bg-raised);border:1px solid var(--border-default);
+    border-radius:var(--radius-md);padding:8px 12px;color:var(--text-secondary);
+    font-size:16px;cursor:pointer;transition:all 0.2s;line-height:1;"
+    title="Alternar tema">
+    🌙
+  </button>
       <button class="logout-btn" onclick="Historico.abrir()">📋 Meus Pedidos</button>
       <button class="logout-btn" onclick="Auth.logout()">Sair</button>
     </div>
