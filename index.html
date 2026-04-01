@@ -6772,6 +6772,8 @@ INSTRUÇÕES:
                   DB_Compras.init(_sb);
                   await DB_Compras.getAll(true);
                   await DashboardPage.render();
+                  await ProdutosPage.render();
+                  await PedidosPage.render();
                   DB.getAll(false).then((lista) => {
                     IAModule.refreshContext(lista);
                   });
