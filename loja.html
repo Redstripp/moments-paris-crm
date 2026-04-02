@@ -838,7 +838,8 @@
     <div class="modal__body" id="carrinhoBody"></div>
     <div class="modal__footer">
       <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="Carrinho.fechar()">Continuar</button>
-      <button class="btn btn--primary" onclick="Carrinho.finalizar()">Finalizar Pedido →</button>
+      <button class="btn btn--danger" onclick="Carrinho.limpar()" style="margin-bottom:8px">🗑️ Limpar Carrinho</button>
+      <button class="btn btn--primary" onclick="Carrinho.finalizar()">Finalizar Pedido</button>
     </div>
   </div>
 </div>
@@ -1247,7 +1248,15 @@ const Carrinho = (() => {
     Pedido.mostrarConfirmacao();
   }
 
-  return { adicionar, remover, alterarQty, atualizarBadge, renderizar, abrir, fechar, finalizar };
+  function limpar() {
+  if (!confirm('Deseja remover todos os produtos do carrinho?')) return;
+  _carrinho = [];
+  localStorage.removeItem('loja_carrinho');
+  atualizarBadge();
+  renderizar();
+}
+
+return { adicionar, remover, alterarQty, atualizarBadge, renderizar, abrir, fechar, finalizar, limpar };
 })();
 
 // ── PEDIDO ──
