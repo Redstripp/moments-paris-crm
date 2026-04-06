@@ -8375,7 +8375,7 @@ const AlertasProdutosModule = (() => {
 
     // Busca pedidos no Supabase
     const inicio = `${meses[0].ano}-${String(meses[0].mes).padStart(2,'0')}-01`;
-    const fim    = `${meses[5].ano}-${String(meses[5].mes).padStart(2,'0')}-31`;
+    const fim = new Date(meses[5].ano, meses[5].mes, 0).toISOString().split('T')[0];
 
     const { data } = await DB.getClient()
       .from('pedidos')
