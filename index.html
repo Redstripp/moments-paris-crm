@@ -1513,7 +1513,7 @@
    ============================================================ */
       .toast-container {
         position: fixed;
-        bottom: 24px;
+        top: 80px;
         right: 24px;
         z-index: 9999;
         display: flex;
@@ -4458,24 +4458,26 @@
         const ICONS = { success: '✅', error: '❌', info: 'ℹ️' };
 
        function show(message, type = 'info', duration = 3200, onClick = null) {
-          const toast = document.createElement('div');
-          toast.className = `toast toast--${type}`;
-          toast.setAttribute('role', 'status');
-          toast.style.cursor = onClick ? 'pointer' : 'default';
-          toast.innerHTML = `<span class="toast__icon" aria-hidden="true">${ICONS[type] || ICONS.info}</span><span>${Helpers.escapeHtml(message)}</span>`;
-          if (onClick) toast.addEventListener('click', () => { onClick(); toast.remove(); });
-          container().appendChild(toast);
-          let timer;
-          function iniciarTimer() {
-            timer = setTimeout(() => {
-              toast.classList.add('toast--out');
-              setTimeout(() => toast.remove(), 350);
-            }, duration);
-          }
-          toast.addEventListener('mouseenter', () => clearTimeout(timer));
-          toast.addEventListener('mouseleave', () => iniciarTimer());
-          iniciarTimer();
-        }
+                const toast = document.createElement('div');
+                toast.className = `toast toast--${type}`;
+                toast.setAttribute('role', 'status');
+                toast.style.cursor = onClick ? 'pointer' : 'default';
+                toast.innerHTML = `<span class="toast__icon" aria-hidden="true">${ICONS[type] || ICONS.info}</span><span>${Helpers.escapeHtml(message)}</span>`;
+                
+                if (onClick) toast.addEventListener('click', () => { onClick(); toast.remove(); });
+              
+                let foiHover = false;
+              
+                function dispensar() {
+                  toast.classList.add('toast--out');
+                  setTimeout(() => toast.remove(), 350);
+                }
+              
+                toast.addEventListener('mouseenter', () => { foiHover = true; });
+                toast.addEventListener('mouseleave', () => {
+                  if (foiHover) dispensar();
+                });
+              }
         
         return { show };
       })();
