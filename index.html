@@ -8240,7 +8240,14 @@ await App.refresh();
     if (periodoEl) periodoEl.textContent = `${MESES[mes - 1]} de ${ano}`;
 
     // Meta salva
-    const metaSalva = parseFloat(localStorage.getItem('crm_meta_mes')) || 0;
+    const { data: metaData } = await DB.getClient()
+      .from('metas')
+      .select('valor')
+      .eq('mes', mes)
+      .eq('ano', ano)
+      .maybeSingle();
+
+    const metaSalva = parseFloat(metaData?.valor) || 0;
     const inputEl = document.getElementById('js-meta-input');
     if (inputEl && metaSalva > 0) inputEl.value = metaSalva;
 
@@ -8278,13 +8285,23 @@ await App.refresh();
     `;
   }
 
-  function salvar() {
+  async function salvar() {
     const val = parseFloat(document.getElementById('js-meta-input')?.value);
-    if (!val || val <= 0) { alert('Digite um valor válido para a meta.'); return; }
-    localStorage.setItem('crm_meta_mes', val);
+    if (!val || val <= 0) { Toast.show('Digite um valor válido para a meta.', 'error'); return; }
+
+    const now = new Date();
+    const mes = now.getMonth() + 1;
+    const ano = now.getFullYear();
+
+    const { error } = await DB.getClient()
+      .from('metas')
+      .upsert({ mes, ano, valor: val }, { onConflict: 'mes,ano' });
+
+    if (error) { Toast.show('Erro ao salvar meta.', 'error'); return; }
+
+    Toast.show('Meta salva com sucesso!', 'success');
     render();
   }
-
   return { render, salvar };
 })();
 
