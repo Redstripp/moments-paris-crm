@@ -4457,18 +4457,26 @@
         const container = () => document.getElementById('js-toast-container');
         const ICONS = { success: '✅', error: '❌', info: 'ℹ️' };
 
-        function show(message, type = 'info', duration = 3200) {
+       function show(message, type = 'info', duration = 3200, onClick = null) {
           const toast = document.createElement('div');
           toast.className = `toast toast--${type}`;
           toast.setAttribute('role', 'status');
+          toast.style.cursor = onClick ? 'pointer' : 'default';
           toast.innerHTML = `<span class="toast__icon" aria-hidden="true">${ICONS[type] || ICONS.info}</span><span>${Helpers.escapeHtml(message)}</span>`;
+          if (onClick) toast.addEventListener('click', () => { onClick(); toast.remove(); });
           container().appendChild(toast);
-          setTimeout(() => {
-            toast.classList.add('toast--out');
-            setTimeout(() => toast.remove(), 350);
-          }, duration);
+          let timer;
+          function iniciarTimer() {
+            timer = setTimeout(() => {
+              toast.classList.add('toast--out');
+              setTimeout(() => toast.remove(), 350);
+            }, duration);
+          }
+          toast.addEventListener('mouseenter', () => clearTimeout(timer));
+          toast.addEventListener('mouseleave', () => iniciarTimer());
+          iniciarTimer();
         }
-
+        
         return { show };
       })();
 
@@ -7912,7 +7920,10 @@ const PedidosPage = (() => {
           } catch (e) {}
 
           // Exibe toast
-          Toast.show(`🛍️ Novo pedido de ${nome} — R$ ${total}`, 'success');
+          Toast.show(`🛍️ Novo pedido de ${nome} — R$ ${total} · Ver pedidos`, 'success', 6000, () => {
+                            const el = document.querySelector('[data-page="pedidos"]');
+                            App.navigate('pedidos', el);
+                          });
 
           // Atualiza a aba de pedidos ou o dashboard dependendo do que estiver aberto
           const paginaAtiva = document.querySelector('.page.is-active');
