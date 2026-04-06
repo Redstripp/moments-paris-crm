@@ -4464,6 +4464,7 @@
                 toast.style.cursor = onClick ? 'pointer' : 'default';
                 toast.innerHTML = `<span class="toast__icon" aria-hidden="true">${ICONS[type] || ICONS.info}</span><span>${Helpers.escapeHtml(message)}</span>`;
                 
+                container().appendChild(toast);
                 if (onClick) toast.addEventListener('click', () => { onClick(); toast.remove(); });
               
                 let foiHover = false;
