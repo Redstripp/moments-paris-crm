@@ -8252,8 +8252,8 @@ await App.refresh();
     if (inputEl && metaSalva > 0) inputEl.value = metaSalva;
 
     // Busca pedidos do mês
-    const inicioMes = `${ano}-${String(mes).padStart(2,'0')}-01`;
-    const fimMes    = `${ano}-${String(mes).padStart(2,'0')}-31`;
+    const inicioMes = new Date(ano, mes - 1, 1).toISOString();
+    const fimMes    = new Date(ano, mes, 0, 23, 59, 59).toISOString();
     const { data } = await DB.getClient()
       .from('pedidos')
       .select('total')
