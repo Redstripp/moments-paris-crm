@@ -4503,56 +4503,63 @@
         };
 
         async function navigate(page, el) {
-          // Atualiza nav
-          document.querySelectorAll('.nav-item').forEach((item) => {
-            item.classList.remove('is-active');
-            item.setAttribute('aria-current', 'false');
-          });
-          if (el) {
-            el.classList.add('is-active');
-            el.setAttribute('aria-current', 'page');
-          }
-
-          // Troca página
-          document.querySelectorAll('.page').forEach((p) => p.classList.remove('is-active'));
-          const pageEl = document.getElementById(`page-${page}`);
-          if (pageEl) pageEl.classList.add('is-active');
-
-          // Atualiza título
-          _currentPage = page;
-          localStorage.setItem('crm_pagina_atual', page);
-
-          // Mostra/oculta busca e botão de cliente conforme a aba
-          const acoesTopbar = document.querySelector('.topbar__actions');
-          if (page === 'clientes') {
-            acoesTopbar.style.display = 'flex';
-          } else {
-            acoesTopbar.style.display = 'none';
-          }
-
-          // Renderiza módulo correto
-          if (page === 'clientes') await ClientsPage.render();
-          if (page === 'agenda') await AgendaPage.render();
-          if (page === 'aniversarios') await AniversariosPage.render();
-          if (page === 'compras') await ComprasPage.render();
-          if (page === 'atividades') {
+        // Proteção da aba Atividades — ANTES de qualquer mudança
+        if (page === 'atividades') {
           const senha = prompt('🔒 Digite a senha para acessar as Atividades:');
-          if (senha === null) { App.navigate(_currentPage); return; }
-          const hashDigitado = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(senha)))).map(b => b.toString(16).padStart(2,'0')).join('');
-          if (hashDigitado !== AtividadesPage.HASH) { alert('❌ Senha incorreta.'); App.navigate(_currentPage); return; }
-          await AtividadesPage.carregar();
-          }
-          if (page === 'produtos') await ProdutosPage.render();
-          if (page === 'pedidos') await PedidosPage.render();
-          if (page === 'categorias') await CategoriasPage.render();
-          if (page === 'ia') { await MetasModule.render(); await AlertasProdutosModule.render(); await GraficoVendasModule.render(); }
-          
-          // Fecha sidebar no mobile
-          if (window.innerWidth <= 860) {
-            document.getElementById('js-sidebar').classList.remove('is-open');
-            document.getElementById('js-mobile-toggle').setAttribute('aria-expanded', 'false');
+          if (!senha) return;
+          const hashDigitado = Array.from(new Uint8Array(
+            await crypto.subtle.digest('SHA-256', new TextEncoder().encode(senha))
+          )).map(b => b.toString(16).padStart(2,'0')).join('');
+          if (hashDigitado !== AtividadesPage.HASH) {
+            alert('❌ Senha incorreta.');
+            return;
           }
         }
+      
+        // Atualiza nav
+        document.querySelectorAll('.nav-item').forEach((item) => {
+          item.classList.remove('is-active');
+          item.setAttribute('aria-current', 'false');
+        });
+        if (el) {
+          el.classList.add('is-active');
+          el.setAttribute('aria-current', 'page');
+        }
+      
+        // Troca página
+        document.querySelectorAll('.page').forEach((p) => p.classList.remove('is-active'));
+        const pageEl = document.getElementById(`page-${page}`);
+        if (pageEl) pageEl.classList.add('is-active');
+      
+        // Atualiza título
+        _currentPage = page;
+        localStorage.setItem('crm_pagina_atual', page);
+      
+        // Mostra/oculta busca e botão de cliente conforme a aba
+        const acoesTopbar = document.querySelector('.topbar__actions');
+        if (page === 'clientes') {
+          acoesTopbar.style.display = 'flex';
+        } else {
+          acoesTopbar.style.display = 'none';
+        }
+      
+        // Renderiza módulo correto
+        if (page === 'clientes') await ClientsPage.render();
+        if (page === 'agenda') await AgendaPage.render();
+        if (page === 'aniversarios') await AniversariosPage.render();
+        if (page === 'compras') await ComprasPage.render();
+        if (page === 'atividades') await AtividadesPage.carregar();
+        if (page === 'produtos') await ProdutosPage.render();
+        if (page === 'pedidos') await PedidosPage.render();
+        if (page === 'categorias') await CategoriasPage.render();
+        if (page === 'ia') { await MetasModule.render(); await AlertasProdutosModule.render(); await GraficoVendasModule.render(); }
+      
+        // Fecha sidebar no mobile
+        if (window.innerWidth <= 860) {
+          document.getElementById('js-sidebar').classList.remove('is-open');
+          document.getElementById('js-mobile-toggle').setAttribute('aria-expanded', 'false');
+        }
+      }
 
         function toggleSidebar() {
           const sidebar = document.getElementById('js-sidebar');
