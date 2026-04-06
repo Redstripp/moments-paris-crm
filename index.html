@@ -4535,7 +4535,13 @@
           if (page === 'agenda') await AgendaPage.render();
           if (page === 'aniversarios') await AniversariosPage.render();
           if (page === 'compras') await ComprasPage.render();
-          if (page === 'atividades') await AtividadesPage.carregar();
+          if (page === 'atividades') {
+          const senha = prompt('🔒 Digite a senha para acessar as Atividades:');
+          if (senha === null) { App.navigate(_currentPage); return; }
+          const hashDigitado = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(senha)))).map(b => b.toString(16).padStart(2,'0')).join('');
+          if (hashDigitado !== AtividadesPage.HASH) { alert('❌ Senha incorreta.'); App.navigate(_currentPage); return; }
+          await AtividadesPage.carregar();
+          }
           if (page === 'produtos') await ProdutosPage.render();
           if (page === 'pedidos') await PedidosPage.render();
           if (page === 'categorias') await CategoriasPage.render();
@@ -8087,10 +8093,10 @@ await App.refresh();
       await carregar();
     }  
 
-    // Limpa todas as atividades
-    async function limparTodas() {
+  // Limpa todas as atividades
   const HASH_CORRETO = 'bf6b15c541a7c306d33ad29d8b9ee344d4007908f9c92c060ecfed2c33cf7296';
 
+  async function limparTodas() {
   const senha = prompt('Digite a senha para limpar o histórico:');
   if (senha === null) return;
 
@@ -8132,7 +8138,7 @@ await App.refresh();
       </div>`).join('');
   }
 
-  return { registrar, carregar, remover, recuperar, limparTodas, buscar };
+  return { registrar, carregar, remover, recuperar, limparTodas, buscar, HASH: HASH_CORRETO };
   })();
 
   const CategoriasPage = (() => {
