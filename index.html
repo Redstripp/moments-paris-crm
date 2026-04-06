@@ -4522,6 +4522,7 @@
           // Atualiza título
           _currentPage = page;
           document.getElementById('js-topbar-title').textContent = PAGE_TITLES[page] || page;
+          localStorage.setItem('crm_pagina_atual', page);
 
           // Mostra/oculta busca e botão de cliente conforme a aba
           const acoesTopbar = document.querySelector('.topbar__actions');
@@ -6954,6 +6955,12 @@ INSTRUÇÕES:
                   });
                   IAModule.init();
                   RealtimePedidos.iniciar();
+                  
+                  // Restaura última página visitada
+                  const _paginaSalva = localStorage.getItem('crm_pagina_atual') || 'dashboard';
+                  const _elNav = document.querySelector(`[data-page="${_paginaSalva}"]`);
+                  await App.navigate(_paginaSalva, _elNav);
+                  
                   hideLoader();
                 } catch (e) {
                   console.error('[APP] Erro ao inicializar:', e);
@@ -8073,8 +8080,10 @@ await App.refresh();
     // Remove uma atividade individual
     async function remover(id) {
       await _sb().from(TABLE).delete().eq('id', id);
+      const lista = document.getElementById('atividades-lista');
+      if (lista) lista.innerHTML = '';
       await carregar();
-    }
+    }  
 
     // Limpa todas as atividades
     async function limparTodas() {
