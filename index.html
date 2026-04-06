@@ -1881,6 +1881,11 @@
         .dash-analytics-grid {
           grid-template-columns: 1fr !important;
         }
+        /* Gráfico de Vendas */
+        #js-grafico-vendas {
+          width: 100% !important;
+          height: 100% !important;
+        }
         #js-meta-input {
           width: 100% !important;
         }
@@ -3560,6 +3565,20 @@
     </div>
   </div>
 
+      <!-- GRÁFICO DE VENDAS POR MÊS -->
+<div style="margin-top:24px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+    <div>
+      <div style="font-size:15px;font-weight:600;color:var(--text-primary);">📈 Vendas por Mês</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Últimos 6 meses</div>
+    </div>
+    <div id="js-grafico-total" style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);"></div>
+  </div>
+  <div style="position:relative;height:260px;">
+    <canvas id="js-grafico-vendas"></canvas>
+  </div>
+</div>
+
 </section>
       
     <!-- ========== PAGE: PRODUTOS ========== -->
@@ -4509,7 +4528,7 @@
           if (page === 'produtos') await ProdutosPage.render();
           if (page === 'pedidos') await PedidosPage.render();
           if (page === 'categorias') await CategoriasPage.render();
-          if (page === 'ia') { await MetasModule.render(); await AlertasProdutosModule.render(); }
+          if (page === 'ia') { await MetasModule.render(); await AlertasProdutosModule.render(); await GraficoVendasModule.render(); }
           
           // Fecha sidebar no mobile
           if (window.innerWidth <= 860) {
@@ -8316,6 +8335,99 @@ const AlertasProdutosModule = (() => {
   }
 
   return { render, tornarDisponivel };
+})();
+
+  const GraficoVendasModule = (() => {
+  let _chart = null;
+
+  async function render() {
+    const canvas = document.getElementById('js-grafico-vendas');
+    if (!canvas) return;
+
+    // Monta os últimos 6 meses
+    const meses = [];
+    const labels = [];
+    const MESES_NOME = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const hoje = new Date();
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      meses.push({ ano: d.getFullYear(), mes: d.getMonth() + 1 });
+      labels.push(MESES_NOME[d.getMonth()] + '/' + String(d.getFullYear()).slice(2));
+    }
+
+    // Busca pedidos no Supabase
+    const inicio = `${meses[0].ano}-${String(meses[0].mes).padStart(2,'0')}-01`;
+    const fim    = `${meses[5].ano}-${String(meses[5].mes).padStart(2,'0')}-31`;
+
+    const { data } = await DB.getClient()
+      .from('pedidos')
+      .select('total, criado_em')
+      .gte('criado_em', inicio)
+      .lte('criado_em', fim);
+
+    // Agrupa por mês
+    const totais = meses.map(({ ano, mes }) => {
+      return (data || [])
+        .filter(p => {
+          const d = new Date(p.criado_em);
+          return d.getFullYear() === ano && d.getMonth() + 1 === mes;
+        })
+        .reduce((s, p) => s + parseFloat(p.total || 0), 0);
+    });
+
+    // Total geral
+    const totalGeral = totais.reduce((s, v) => s + v, 0);
+    const el = document.getElementById('js-grafico-total');
+    if (el) el.textContent = 'Total: R$ ' + totalGeral.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+    // Destroi gráfico anterior se existir
+    if (_chart) { _chart.destroy(); _chart = null; }
+
+    _chart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Vendas (R$)',
+          data: totais,
+          backgroundColor: 'rgba(201,168,76,0.25)',
+          borderColor: '#c9a84c',
+          borderWidth: 2,
+          borderRadius: 6,
+          hoverBackgroundColor: 'rgba(201,168,76,0.45)',
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' R$ ' + ctx.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 })
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: { color: '#9a8f7a', font: { family: 'Montserrat', size: 11 } },
+            grid: { color: 'rgba(201,168,76,0.07)' }
+          },
+          y: {
+            ticks: {
+              color: '#9a8f7a',
+              font: { family: 'Montserrat', size: 11 },
+              callback: v => 'R$ ' + v.toLocaleString('pt-BR')
+            },
+            grid: { color: 'rgba(201,168,76,0.07)' }
+          }
+        }
+      }
+    });
+  }
+
+  return { render };
 })();
   
 </script>
