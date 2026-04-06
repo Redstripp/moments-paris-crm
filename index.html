@@ -4140,16 +4140,15 @@
          * Mapeia objeto interno do CRM para o formato do Supabase.
          */
         function _toSupabase(data) {
-          return {
-            nome: data.nome || '',
-            data_nascimento: data.dataNascimento || null,
-            telefone: data.telefone || '',
-            cidade: data.cidade || '',
-            observacoes: data.observacoes || '',
-            pessoas_importantes: (data.pessoasImportantes || []).filter((p) => p.nome),
-          };
-        }
-
+        return {
+          nome: (data.nome || '').slice(0, 100),
+          data_nascimento: data.dataNascimento || null,
+          telefone: (data.telefone || '').slice(0, 20),
+          cidade: (data.cidade || '').slice(0, 100),
+          observacoes: (data.observacoes || '').slice(0, 1000),
+          pessoas_importantes: (data.pessoasImportantes || []).filter((p) => p.nome).slice(0, 10),
+        };
+      }
         /**
          * Inicializa a conexão com o Supabase.
          * Chamada uma única vez durante o boot do sistema.
@@ -7707,24 +7706,27 @@ document.getElementById('modal-produto').classList.add('is-open');
   }
 
   async function salvar() {
-    const nome = document.getElementById('fp-nome').value.trim();
-    const preco = parseFloat(document.getElementById('fp-preco').value);
-    const imagem_url = document.getElementById('fp-imagem').value.trim();
-    const descricao = document.getElementById('fp-desc').value.trim();
-    const disponivel = document.getElementById('fp-disponivel').value === 'true';
+  const nome = document.getElementById('fp-nome').value.trim();
+  const preco = parseFloat(document.getElementById('fp-preco').value);
+  const imagem_url = document.getElementById('fp-imagem').value.trim();
+  const descricao = document.getElementById('fp-desc').value.trim();
+  const disponivel = document.getElementById('fp-disponivel').value === 'true';
 
-    document.getElementById('err-fp-nome').textContent = '';
-    document.getElementById('err-fp-preco').textContent = '';
+  document.getElementById('err-fp-nome').textContent = '';
+  document.getElementById('err-fp-preco').textContent = '';
 
-    let ok = true;
-    if (!nome) { document.getElementById('err-fp-nome').textContent = 'Nome é obrigatório'; ok = false; }
-    if (!preco || preco <= 0) { document.getElementById('err-fp-preco').textContent = 'Preço inválido'; ok = false; }
-    if (!ok) return;
+  let ok = true;
+  if (!nome) { document.getElementById('err-fp-nome').textContent = 'Nome é obrigatório'; ok = false; }
+  if (!preco || preco <= 0) { document.getElementById('err-fp-preco').textContent = 'Preço inválido'; ok = false; }
+  if (nome.length > 100) { document.getElementById('err-fp-nome').textContent = 'Máximo 100 caracteres'; ok = false; }
+  if (descricao && descricao.length > 500) { Toast.show('Descrição muito longa. Máximo 500 caracteres.', 'error'); ok = false; }
+  if (!ok) return;
 
-    const btn = document.getElementById('js-btn-save-produto');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Salvando...';
+  const btn = document.getElementById('js-btn-save-produto');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Salvando...';
 
+  try {
     const categoria = document.getElementById('fp-categoria').value;
     const payload = { nome, preco, imagem_url: imagem_url || null, descricao: descricao || null, disponivel, categoria: categoria || null };
 
@@ -7736,15 +7738,36 @@ document.getElementById('modal-produto').classList.add('is-open');
       Toast.show('Produto adicionado!', 'success');
     }
 
-    btn.disabled = false;
-    btn.innerHTML = 'Salvar Produto';
     fechar();
     await ProdutosPage.render();
+  } catch(e) {
+    Toast.show('Erro ao salvar produto. Tente novamente.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Salvar Produto';
   }
+}
 
   function previewImagem(input) {
   const file = input.files[0];
   if (!file) return;
+
+  // Bloqueia imagens acima de 500KB
+  const MAX_KB = 500;
+  if (file.size > MAX_KB * 1024) {
+    Toast.show(`Imagem muito grande. Máximo permitido: ${MAX_KB}KB. Esta tem ${(file.size/1024).toFixed(0)}KB.`, 'error');
+    input.value = '';
+    return;
+  }
+
+  // Bloqueia tipos não permitidos
+  const TIPOS = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!TIPOS.includes(file.type)) {
+    Toast.show('Formato inválido. Use JPG, PNG ou WEBP.', 'error');
+    input.value = '';
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = function(e) {
     document.getElementById('fp-imagem').value = e.target.result;
@@ -7755,7 +7778,6 @@ document.getElementById('modal-produto').classList.add('is-open');
   };
   reader.readAsDataURL(file);
 }
-
 return { abrir, fechar, salvar, previewImagem };
 })();
 
