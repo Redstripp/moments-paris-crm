@@ -1881,6 +1881,13 @@
         .dash-analytics-grid {
           grid-template-columns: 1fr !important;
         }
+        #js-meta-input {
+          width: 100% !important;
+        }
+        #page-ia .page-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
       }
 
       @media (max-width: 860px) {
@@ -2728,7 +2735,7 @@
               clip-rule="evenodd"
             />
           </svg>
-          Assistente IA
+          Inteligência
           <span
             class="nav-item__badge nav-item__badge--warn"
             style="background: rgba(201, 168, 76, 0.15); color: var(--gold); border: 1px solid rgba(201, 168, 76, 0.3)"
@@ -3521,83 +3528,48 @@
     <!-- ============================================================
      PAGE: ASSISTENTE IA
      ============================================================ -->
-    <section class="page" id="page-ia" aria-label="Assistente IA">
-      <div class="ia-page">
-        <!-- Cabeçalho -->
-        <div class="ia-header-box">
-          <div class="ia-header-box__icon">⚡</div>
-          <div>
-            <div class="ia-header-box__title">Assistente Inteligente</div>
-            <div class="ia-header-box__sub">
-              Faça perguntas sobre seus clientes e vendas — a IA analisa seus dados em tempo real
-            </div>
-          </div>
-        </div>
+    <section class="page" id="page-ia" aria-label="Inteligência">
+  <div class="page-header">
+    <div class="page-header__left">
+      <h2 class="page-header__title">Inteligência</h2>
+      <p class="page-header__subtitle">Metas e alertas do seu negócio</p>
+    </div>
+  </div>
 
-        <!-- Barra de status do backend -->
-        <div class="ia-config-bar">
-          <button class="btn btn--secondary btn--sm" onclick="IAModule.clearChat()">🗑️ Limpar conversa</button>
-          <span class="ia-key-status ia-key-status--off" id="ia-key-status">● Conectando...</span>
-        </div>
-
-        <!-- Área de chat -->
-        <div class="ia-chat-wrap">
-          <div class="ia-messages" id="ia-messages">
-            <!-- Estado vazio inicial -->
-            <div class="ia-empty" id="ia-empty-state">
-              <div class="ia-empty__icon">🤖</div>
-              <div class="ia-empty__title">Como posso ajudar?</div>
-              <div class="ia-empty__sub">
-                Pergunte qualquer coisa sobre seus clientes, aniversários, vendas e muito mais.
-              </div>
-              <div class="ia-suggestions">
-                <button class="ia-suggestion-btn" onclick="IAModule.quickAsk('Quais clientes mais compraram?')">
-                  Quem mais comprou?
-                </button>
-                <button class="ia-suggestion-btn" onclick="IAModule.quickAsk('Quais clientes não compraram ainda?')">
-                  Sem compras ainda
-                </button>
-                <button class="ia-suggestion-btn" onclick="IAModule.quickAsk('Mostre um resumo geral das vendas')">
-                  Resumo de vendas
-                </button>
-                <button class="ia-suggestion-btn" onclick="IAModule.quickAsk('Quais aniversários se aproximam?')">
-                  Aniversários próximos
-                </button>
-                <button
-                  class="ia-suggestion-btn"
-                  onclick="IAModule.quickAsk('Qual cliente tem mais pessoas importantes cadastradas?')"
-                >
-                  Rede de relacionamentos
-                </button>
-                <button class="ia-suggestion-btn" onclick="IAModule.quickAsk('Qual o ticket médio por cliente?')">
-                  Ticket médio
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Input -->
-          <div class="ia-input-row">
-            <textarea
-              class="ia-input"
-              id="ia-input"
-              placeholder="Pergunte sobre clientes, vendas, aniversários..."
-              rows="1"
-              onkeydown="IAModule.onKeyDown(event)"
-              oninput="IAModule.autoResize(this)"
-              disabled
-            ></textarea>
-            <button class="ia-send-btn" id="ia-send-btn" onclick="IAModule.send()" disabled title="Enviar pergunta">
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+  <!-- METAS DO MÊS -->
+  <div style="margin-bottom:24px;background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:15px;font-weight:600;color:var(--text-primary);">🎯 Meta do Mês</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;" id="js-meta-periodo"></div>
       </div>
-    </section>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="number" id="js-meta-input" placeholder="Ex: 5000"
+          style="width:140px;padding:8px 12px;border-radius:var(--radius-md);border:1px solid var(--border-default);background:var(--bg-raised);color:var(--text-primary);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;"
+          onfocus="this.style.borderColor='var(--gold)'"
+          onblur="this.style.borderColor='var(--border-default)'"
+        />
+        <button onclick="MetasModule.salvar()"
+          style="padding:8px 16px;border-radius:var(--radius-md);border:none;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#000;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;cursor:pointer;">
+          Salvar
+        </button>
+      </div>
+    </div>
+    <div id="js-meta-body">
+      <div style="color:var(--text-muted);font-size:13px;">Carregando...</div>
+    </div>
+  </div>
+
+  <!-- ALERTAS DE PRODUTOS -->
+  <div style="background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:24px;">
+    <div style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;">📦 Produtos Indisponíveis</div>
+    <div id="js-alertas-body">
+      <div style="color:var(--text-muted);font-size:13px;">Carregando...</div>
+    </div>
+  </div>
+
+</section>
+      
     <!-- ========== PAGE: PRODUTOS ========== -->
 <section class="page" id="page-produtos" aria-label="Produtos">
   <div class="page-header">
@@ -4541,7 +4513,8 @@
           if (page === 'produtos') await ProdutosPage.render();
           if (page === 'pedidos') await PedidosPage.render();
           if (page === 'categorias') await CategoriasPage.render();
-
+          if (page === 'ia') { await MetasModule.render(); await AlertasProdutosModule.render(); }
+          
           // Fecha sidebar no mobile
           if (window.innerWidth <= 860) {
             document.getElementById('js-sidebar').classList.remove('is-open');
@@ -8236,6 +8209,117 @@ await App.refresh();
   }
 
   return { render, abrirModal, fecharModal, salvar, excluir, buscar };
+})();
+
+  const MetasModule = (() => {
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                 'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+  async function render() {
+    const now = new Date();
+    const mes = now.getMonth() + 1;
+    const ano = now.getFullYear();
+
+    // Período
+    const periodoEl = document.getElementById('js-meta-periodo');
+    if (periodoEl) periodoEl.textContent = `${MESES[mes - 1]} de ${ano}`;
+
+    // Meta salva
+    const metaSalva = parseFloat(localStorage.getItem('crm_meta_mes')) || 0;
+    const inputEl = document.getElementById('js-meta-input');
+    if (inputEl && metaSalva > 0) inputEl.value = metaSalva;
+
+    // Busca pedidos do mês
+    const inicioMes = `${ano}-${String(mes).padStart(2,'0')}-01`;
+    const fimMes    = `${ano}-${String(mes).padStart(2,'0')}-31`;
+    const { data } = await DB.getClient()
+      .from('pedidos')
+      .select('total')
+      .gte('criado_em', inicioMes)
+      .lte('criado_em', fimMes);
+
+    const totalMes = (data || []).reduce((s, p) => s + parseFloat(p.total || 0), 0);
+    const pct = metaSalva > 0 ? Math.min((totalMes / metaSalva) * 100, 100) : 0;
+    const cor = pct >= 100 ? 'var(--success)' : pct >= 60 ? 'var(--gold)' : 'var(--danger)';
+
+    const body = document.getElementById('js-meta-body');
+    if (!body) return;
+
+    if (metaSalva === 0) {
+      body.innerHTML = `<div style="color:var(--text-muted);font-size:13px;">Digite uma meta acima para acompanhar seu progresso.</div>`;
+      return;
+    }
+
+    body.innerHTML = `
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+        <span style="color:var(--text-secondary)">Faturado: <strong style="color:var(--text-primary)">R$ ${totalMes.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong></span>
+        <span style="color:var(--text-secondary)">Meta: <strong style="color:var(--text-primary)">R$ ${metaSalva.toLocaleString('pt-BR',{minimumFractionDigits:2})}</strong></span>
+      </div>
+      <div style="height:12px;background:var(--bg-overlay);border-radius:999px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${cor};border-radius:999px;transition:width 0.6s ease;"></div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:${cor};font-weight:600;">${pct.toFixed(1)}% da meta atingida</div>
+      ${pct >= 100 ? '<div style="margin-top:8px;font-size:13px;">🎉 Parabéns! Meta do mês batida!</div>' : ''}
+    `;
+  }
+
+  function salvar() {
+    const val = parseFloat(document.getElementById('js-meta-input')?.value);
+    if (!val || val <= 0) { alert('Digite um valor válido para a meta.'); return; }
+    localStorage.setItem('crm_meta_mes', val);
+    render();
+  }
+
+  return { render, salvar };
+})();
+
+const AlertasProdutosModule = (() => {
+  async function render() {
+    const body = document.getElementById('js-alertas-body');
+    if (!body) return;
+
+    const { data, error } = await DB.getClient()
+      .from('produtos')
+      .select('id, nome, preco, categoria')
+      .eq('disponivel', false);
+
+    if (error) {
+      body.innerHTML = `<div style="color:var(--danger);font-size:13px;">Erro ao carregar produtos.</div>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      body.innerHTML = `<div style="color:var(--text-muted);font-size:13px;">✅ Todos os produtos estão disponíveis.</div>`;
+      return;
+    }
+
+    body.innerHTML = data.map(p => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-subtle);">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text-primary);">${p.nome}</div>
+          ${p.categoria ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">🏷️ ${p.categoria}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);">
+            R$ ${Number(p.preco).toLocaleString('pt-BR',{minimumFractionDigits:2})}
+          </span>
+          <span style="font-size:11px;padding:3px 10px;border-radius:999px;background:rgba(192,57,43,0.1);color:var(--danger);border:1px solid rgba(192,57,43,0.2);">
+            ❌ Indisponível
+          </span>
+          <button onclick="AlertasProdutosModule.tornarDisponivel('${p.id}')"
+            style="padding:5px 12px;border-radius:var(--radius-md);border:1px solid var(--success);background:transparent;color:var(--success);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+            ✅ Disponibilizar
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function tornarDisponivel(id) {
+    await DB.getClient().from('produtos').update({ disponivel: true }).eq('id', id);
+    await render();
+  }
+
+  return { render, tornarDisponivel };
 })();
   
 </script>
