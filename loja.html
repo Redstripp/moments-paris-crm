@@ -663,6 +663,11 @@
       .logout-btn { font-size: 10px; padding: 6px 8px; }
     }
 
+    @keyframes slideDown {
+      from { transform:translateY(-100%); opacity:0; }
+      to   { transform:translateY(0);     opacity:1; }
+    }
+
     /* ── TOAST ── */
 .toast-container {
   position: fixed;
@@ -703,14 +708,7 @@
   from { opacity: 1; transform: translateX(0); }
   to   { opacity: 0; transform: translateX(40px); }
 }
-
-<style>
-@keyframes slideDown {
-  from { transform:translateY(-100%); opacity:0; }
-  to   { transform:translateY(0);     opacity:1; }
-}
     
-  </style>
 </head>
 <body>
 
@@ -788,7 +786,6 @@
   background:linear-gradient(135deg,#1a1400,#2a1f00);
   border-bottom:2px solid var(--gold);
   padding:14px 24px;
-  display:none;
   align-items:center;
   justify-content:space-between;
   gap:12px;
@@ -1455,16 +1452,15 @@ const Historico = (() => {
                 ${st.label}
               </span>
               ${p.status === 'pendente' ? `
-                <button onclick="EditarPedido.abrir('${p.id}')"
-                  style="font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--gold);
-                  background:transparent;color:var(--gold);cursor:pointer;font-family:'Montserrat',sans-serif;
-                  font-weight:600;letter-spacing:0.05em;">
-                <button 
-                  data-id="${p.id}"
-                  data-itens='${JSON.stringify(p.itens).replace(/'/g, "&apos;")}'
-                  onclick="EditarPedido.abrirPorBotao(this)"
-                  ✏️ Editar
-                </button>` : ''}
+              <button 
+                data-id="${p.id}"
+                data-itens='${JSON.stringify(p.itens).replace(/'/g, "&apos;")}'
+                onclick="EditarPedido.abrirPorBotao(this)"
+                style="font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--gold);
+                background:transparent;color:var(--gold);cursor:pointer;font-family:'Montserrat',sans-serif;
+                font-weight:600;letter-spacing:0.05em;">
+                ✏️ Editar
+              </button>` : ''}
             </div>
           </div>
           <div class="historico-item__body">
@@ -1706,7 +1702,7 @@ async function _verificarPedidoSeparado() {
   localStorage.setItem('loja_tema', novoTema);
 
   document.getElementById('btnTemaIcone').textContent = novoTema === 'light' ? '☀️' : '🌙';
-  document.getElementById('btnTemaLabel').textContent  = novoTema === 'light' ? 'Tema Claro' : 'Tema Escuro';
+  document.getElementById('btnTemaLabel').textContent  = novoTema === 'light' ? 'Tema Escuro' : 'Tema Claro';
 }
 
 </script>
