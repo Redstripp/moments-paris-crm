@@ -1976,7 +1976,7 @@
       }
       .sidebar-overlay.is-open { display: block; }
 
-      @media (max-width: 860px) {
+    @media (max-width: 860px) {
         .modal {
           width: 100%;
           max-width: 100%;
@@ -2005,6 +2005,7 @@
         .topbar__actions {
           gap: 6px;
         }
+      }
 
       @media (max-width: 560px) {
         .kpi-grid {
@@ -7688,7 +7689,7 @@ if (document.getElementById('fp-imagem-file')) document.getElementById('fp-image
       document.getElementById('fp-desc').value = '';
       document.getElementById('fp-disponivel').value = 'true';
     }
-    const { data: cats } = await _sb().from('categorias').select('nome').order('ordem');
+const { data: cats } = await _sb().from('categorias').select('nome').order('ordem');
 const sel = document.getElementById('fp-categoria');
 sel.innerHTML = '<option value="">Sem categoria</option>';
 (cats || []).forEach(c => {
@@ -7697,7 +7698,6 @@ sel.innerHTML = '<option value="">Sem categoria</option>';
   opt.textContent = c.nome;
   sel.appendChild(opt);
 });
-if (id && typeof data !== 'undefined' && data) sel.value = data.categoria || '';
 document.getElementById('modal-produto').classList.add('is-open');
   }
 
