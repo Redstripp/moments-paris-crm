@@ -1369,29 +1369,17 @@ const Pedido = (() => {
 
     // Notificação WhatsApp
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
-    const emojis = {
-      bolsa:    atob('8J+bje+4jw=='),
-      cliente:  atob('8J+RpA=='),
-      tel:      atob('8J+Tsg=='),
-      end:      atob('8J+Tjw=='),
-      empresa:  atob('8J+HoA=='),
-      cpf:      atob('8J+Tmw=='),
-      carrinho: atob('8J+btA=='),
-      check:    atob('4pyF77+P'),
-      dinheiro: atob('8J+Ssw==')
-    };
-
     const msg = encodeURIComponent(
-      emojis.bolsa + ' *Novo Pedido - Moments Paris*\n\n' +
-      emojis.cliente  + ' *Cliente:* '       + _cliente.nome + '\n' +
-      emojis.tel      + ' *Telefone:* '      + _cliente.telefone + '\n' +
-      emojis.end      + ' *Endereco:* '      + _cliente.endereco + '\n' +
-      emojis.empresa  + ' *Empresa:* '       + (_cliente.empresa || 'Nao informado') + '\n' +
-      emojis.cpf      + ' *CPF (iniciais):* '+ (_cliente.cpf_iniciais || 'Nao informado') + '\n\n' +
-      emojis.carrinho + ' *Itens do Pedido:*\n' +
-      itens.map(i => emojis.check + ' ' + i.nome + ' x' + i.qty + ' = ' + formatMoney(i.subtotal)).join('\n') +
-      '\n\n' + emojis.dinheiro + ' *Total: ' + formatMoney(total) + '*'
-    );
+        `🛍️ *Novo Pedido — Moment's Paris*\n\n` +
+        `👤 Cliente: ${_cliente.nome}\n` +
+        `📱 Telefone: ${_cliente.telefone}\n` +
+        `📍 Endereço: ${_cliente.endereco}\n` +
+        `🏢 ID da Empresa: ${_cliente.empresa || 'Não informado'}\n` +
+        `🪪 CPF (iniciais): ${_cliente.cpf_iniciais || 'Não informado'}\n\n` +
+        `*Itens:*\n` +
+        itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
+        `\n\n*Total: ${formatMoney(total)}*`
+      );
     // Cria link clicável em vez de popup (mais confiável no mobile)
     const waUrl = `https://wa.me/${numeroAdmin}?text=${msg}`;
     const linkWa = document.createElement('a');
