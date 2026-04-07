@@ -1369,17 +1369,18 @@ const Pedido = (() => {
 
     // Notificação WhatsApp
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
+    const E = (c) => String.fromCodePoint(...c.split(',').map(Number));
     const msg = encodeURIComponent(
-        `🛍️ *Novo Pedido — Moment's Paris*\n\n` +
-        `👤 Cliente: ${_cliente.nome}\n` +
-        `📱 Telefone: ${_cliente.telefone}\n` +
-        `📍 Endereço: ${_cliente.endereco}\n` +
-        `🏢 ID da Empresa: ${_cliente.empresa || 'Não informado'}\n` +
-        `🪪 CPF (iniciais): ${_cliente.cpf_iniciais || 'Não informado'}\n\n` +
-        `*Itens:*\n` +
-        itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
-        `\n\n*Total: ${formatMoney(total)}*`
-      );
+      E('128717,65039') + ' *Novo Pedido - Moments Paris*\n\n' +
+      E('128100') + ' *Cliente:* ' + _cliente.nome + '\n' +
+      E('128241') + ' *Telefone:* ' + _cliente.telefone + '\n' +
+      E('128205') + ' *Endereco:* ' + _cliente.endereco + '\n' +
+      E('127970') + ' *Empresa:* ' + (_cliente.empresa || 'Nao informado') + '\n' +
+      E('128203') + ' *CPF:* ' + (_cliente.cpf_iniciais || 'Nao informado') + '\n\n' +
+      E('128722') + ' *Itens:*\n' +
+      itens.map(i => E('9989') + ' ' + i.nome + ' x' + i.qty + ' = ' + formatMoney(i.subtotal)).join('\n') +
+      '\n\n' + E('128176') + ' *Total: ' + formatMoney(total) + '*'
+    );
     // Cria link clicável em vez de popup (mais confiável no mobile)
     const waUrl = `https://wa.me/${numeroAdmin}?text=${msg}`;
     const linkWa = document.createElement('a');
