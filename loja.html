@@ -1371,15 +1371,15 @@ const Pedido = (() => {
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
     
     const msg = encodeURIComponent(
-      String.fromCodePoint(0x1F3E2) + ` *Novo Pedido - Moment's Paris*\n\n` +
-      String.fromCodePoint(0x1F464) + ` *Cliente:* ${_cliente.nome}\n` +
-      String.fromCodePoint(0x1F4F1) + ` *Telefone:* ${_cliente.telefone}\n` +
-      String.fromCodePoint(0x1F6A7) + ` *Endereco:* ${_cliente.endereco}\n` +
-      String.fromCodePoint(0x1F3EC) + ` *Empresa:* ${_cliente.empresa || 'Nao informado'}\n` +
-      String.fromCodePoint(0x1FAAA) + ` *CPF (iniciais):* ${_cliente.cpf_iniciais || 'Nao informado'}\n\n` +
-      String.fromCodePoint(0x1F4CB) + ` *Itens:*\n` +
+      `*Novo Pedido - Moment's Paris*\n\n` +
+      `*Cliente:* ${_cliente.nome}\n` +
+      `*Telefone:* ${_cliente.telefone}\n` +
+      `*Endereco:* ${_cliente.endereco}\n` +
+      `*Empresa:* ${_cliente.empresa || 'Nao informado'}\n` +
+      `*CPF (iniciais):* ${_cliente.cpf_iniciais || 'Nao informado'}\n\n` +
+      `*Itens:*\n` +
       itens.map(i => `- ${i.nome} x ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
-      `\n\n` + String.fromCodePoint(0x1F4B0) + ` *Total: ${formatMoney(total)}*`
+      `\n\n*Total: ${formatMoney(total)}*`
     );
     
     // Cria link clicável em vez de popup (mais confiável no mobile)
