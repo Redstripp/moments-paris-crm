@@ -1159,23 +1159,24 @@ const Produtos = (() => {
   });
 }
 
-function filtrarCategoria(categoria) {
-  const busca = document.getElementById('buscaProdutos').value.toLowerCase();
-  const cards = document.querySelectorAll('.produto-card');
-  cards.forEach(card => {
-    const nome = card.dataset.nome || '';
-    const cat  = card.dataset.categoria || '';
-    const matchBusca = nome.includes(busca);
-    const matchCat   = !categoria || cat === categoria;
-    card.style.display = matchBusca && matchCat ? '' : 'none';
-  });
-}
+let _categoriaAtiva = '';
+
+  function filtrarCategoria(categoria) {
+    _categoriaAtiva = categoria;
+    _aplicarFiltros();
+  }
 
   function buscar(termo) {
-    const t = termo.toLowerCase().trim();
-    const filtrados = t
-      ? _todos.filter(p => p.nome.toLowerCase().includes(t) || (p.descricao || '').toLowerCase().includes(t))
-      : _todos;
+    _aplicarFiltros(termo);
+  }
+
+  function _aplicarFiltros(termo) {
+    const t = (termo !== undefined ? termo : document.getElementById('buscaProdutos').value).toLowerCase().trim();
+    const filtrados = _todos.filter(p => {
+      const matchBusca = !t || p.nome.toLowerCase().includes(t) || (p.descricao || '').toLowerCase().includes(t);
+      const matchCat   = !_categoriaAtiva || (p.categoria || '') === _categoriaAtiva;
+      return matchBusca && matchCat;
+    });
 
     const grid = document.getElementById('produtosGrid');
     if (filtrados.length === 0) {
@@ -1213,8 +1214,18 @@ function filtrarCategoria(categoria) {
 const Carrinho = (() => {
   function adicionar(produto, qty = 1) {
     const idx = _carrinho.findIndex(i => i.id === produto.id);
-    if (idx >= 0) _carrinho[idx].qty += qty;
-    else _carrinho.push({ ...produto, qty });
+    if (idx >= 0) {
+      _carrinho[idx].qty += qty;
+    } else {
+      // Salva apenas o essencial — sem imagem_url, descricao, etc.
+      _carrinho.push({
+        id: produto.id,
+        nome: produto.nome,
+        preco: produto.preco,
+        imagem_url: produto.imagem_url || null,
+        qty
+      });
+    }
     _salvarCarrinho();
     atualizarBadge();
     renderizar();
@@ -1467,15 +1478,18 @@ const Toast = (() => {
 
     _getContainer().appendChild(toast);
 
-    let foiHover = false;
-
     function dispensar() {
       toast.classList.add('toast--out');
       setTimeout(() => toast.remove(), 350);
     }
 
-    toast.addEventListener('mouseenter', () => { foiHover = true; });
-    toast.addEventListener('mouseleave', () => { if (foiHover) dispensar(); });
+    // Some automaticamente após 4 segundos
+    const timer = setTimeout(dispensar, 4000);
+
+    // Se passar o mouse, cancela o timer e some ao tirar
+    toast.addEventListener('mouseenter', () => clearTimeout(timer));
+    toast.addEventListener('mouseleave', () => dispensar());
+    toast.addEventListener('click', () => dispensar());
   }
 
   return { show };
