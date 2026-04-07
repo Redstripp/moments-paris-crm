@@ -1369,18 +1369,17 @@ const Pedido = (() => {
 
     // Notificação WhatsApp
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
-    const _e = String.fromCodePoint;
     const msg = encodeURIComponent(
-  _e(0x1F6CD,0xFE0F) + ' *Novo Pedido \u2014 Moment\'s Paris*\n\n' +
-  _e(0x1F464) + ' *Cliente:* ' + _cliente.nome + '\n' +
-  _e(0x1F4F1) + ' *Telefone:* ' + _cliente.telefone + '\n' +
-  _e(0x1F4CD) + ' *Endere\u00E7o:* ' + _cliente.endereco + '\n' +
-  _e(0x1F3E2) + ' *Empresa:* ' + (_cliente.empresa || 'N\u00E3o informado') + '\n' +
-  _e(0x1F4CB) + ' *CPF (iniciais):* ' + (_cliente.cpf_iniciais || 'N\u00E3o informado') + '\n\n' +
-  _e(0x1F6D2) + ' *Itens do Pedido:*\n' +
-  itens.map(i => _e(0x2705) + ' ' + i.nome + ' \u00D7 ' + i.qty + ' = ' + formatMoney(i.subtotal)).join('\n') +
-  '\n\n' + _e(0x1F4B0) + ' *Total: ' + formatMoney(total) + '*'
-);
+        '\uD83D\uDECD\uFE0F *Novo Pedido - Moments Paris*\n\n' +
+        '\uD83D\uDC64 *Cliente:* ' + _cliente.nome + '\n' +
+        '\uD83D\uDCF1 *Telefone:* ' + _cliente.telefone + '\n' +
+        '\uD83D\uDCCD *Endereco:* ' + _cliente.endereco + '\n' +
+        '\uD83C\uDFE2 *Empresa:* ' + (_cliente.empresa || 'Nao informado') + '\n' +
+        '\uD83D\uDCCB *CPF (iniciais):* ' + (_cliente.cpf_iniciais || 'Nao informado') + '\n\n' +
+        '\uD83D\uDED2 *Itens do Pedido:*\n' +
+        itens.map(i => '\u2705 ' + i.nome + ' x' + i.qty + ' = ' + formatMoney(i.subtotal)).join('\n') +
+        '\n\n\uD83D\uDCB0 *Total: ' + formatMoney(total) + '*'
+      );
     // Cria link clicável em vez de popup (mais confiável no mobile)
     const waUrl = `https://wa.me/${numeroAdmin}?text=${msg}`;
     const linkWa = document.createElement('a');
