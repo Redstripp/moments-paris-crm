@@ -1369,17 +1369,29 @@ const Pedido = (() => {
 
     // Notificação WhatsApp
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
+    const emojis = {
+      bolsa:    atob('8J+bje+4jw=='),
+      cliente:  atob('8J+RpA=='),
+      tel:      atob('8J+Tsg=='),
+      end:      atob('8J+Tjw=='),
+      empresa:  atob('8J+HoA=='),
+      cpf:      atob('8J+Tmw=='),
+      carrinho: atob('8J+btA=='),
+      check:    atob('4pyF77+P'),
+      dinheiro: atob('8J+Ssw==')
+    };
+
     const msg = encodeURIComponent(
-        '\uD83D\uDECD\uFE0F *Novo Pedido - Moments Paris*\n\n' +
-        '\uD83D\uDC64 *Cliente:* ' + _cliente.nome + '\n' +
-        '\uD83D\uDCF1 *Telefone:* ' + _cliente.telefone + '\n' +
-        '\uD83D\uDCCD *Endereco:* ' + _cliente.endereco + '\n' +
-        '\uD83C\uDFE2 *Empresa:* ' + (_cliente.empresa || 'Nao informado') + '\n' +
-        '\uD83D\uDCCB *CPF (iniciais):* ' + (_cliente.cpf_iniciais || 'Nao informado') + '\n\n' +
-        '\uD83D\uDED2 *Itens do Pedido:*\n' +
-        itens.map(i => '\u2705 ' + i.nome + ' x' + i.qty + ' = ' + formatMoney(i.subtotal)).join('\n') +
-        '\n\n\uD83D\uDCB0 *Total: ' + formatMoney(total) + '*'
-      );
+      emojis.bolsa + ' *Novo Pedido - Moments Paris*\n\n' +
+      emojis.cliente  + ' *Cliente:* '       + _cliente.nome + '\n' +
+      emojis.tel      + ' *Telefone:* '      + _cliente.telefone + '\n' +
+      emojis.end      + ' *Endereco:* '      + _cliente.endereco + '\n' +
+      emojis.empresa  + ' *Empresa:* '       + (_cliente.empresa || 'Nao informado') + '\n' +
+      emojis.cpf      + ' *CPF (iniciais):* '+ (_cliente.cpf_iniciais || 'Nao informado') + '\n\n' +
+      emojis.carrinho + ' *Itens do Pedido:*\n' +
+      itens.map(i => emojis.check + ' ' + i.nome + ' x' + i.qty + ' = ' + formatMoney(i.subtotal)).join('\n') +
+      '\n\n' + emojis.dinheiro + ' *Total: ' + formatMoney(total) + '*'
+    );
     // Cria link clicável em vez de popup (mais confiável no mobile)
     const waUrl = `https://wa.me/${numeroAdmin}?text=${msg}`;
     const linkWa = document.createElement('a');
