@@ -1455,10 +1455,14 @@ const Historico = (() => {
                 ${st.label}
               </span>
               ${p.status === 'pendente' ? `
-                <button onclick="EditarPedido.abrir('${p.id}', ${JSON.stringify(p.itens).replace(/'/g, '&#39;')})"
+                <button onclick="EditarPedido.abrir('${p.id}')"
                   style="font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--gold);
                   background:transparent;color:var(--gold);cursor:pointer;font-family:'Montserrat',sans-serif;
                   font-weight:600;letter-spacing:0.05em;">
+                <button 
+                  data-id="${p.id}"
+                  data-itens='${JSON.stringify(p.itens).replace(/'/g, "&apos;")}'
+                  onclick="EditarPedido.abrirPorBotao(this)"
                   ✏️ Editar
                 </button>` : ''}
             </div>
@@ -1636,7 +1640,13 @@ const EditarPedido = (() => {
     Historico.carregar();
   }
 
-  return { abrir, fechar, alterarQty, remover, adicionarProduto, salvar };
+  function abrirPorBotao(btn) {
+  const id = btn.getAttribute('data-id');
+  const itens = JSON.parse(btn.getAttribute('data-itens').replace(/&apos;/g, "'"));
+  abrir(id, itens);
+}
+
+  return { abrir, abrirPorBotao, fechar, alterarQty, remover, adicionarProduto, salvar };
 })();
   
 // ── BOOT ──
