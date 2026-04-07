@@ -1515,6 +1515,129 @@ const Toast = (() => {
 
   return { show };
 })();
+
+// ── EDITAR PEDIDO ──
+const EditarPedido = (() => {
+  let _pedidoId = null;
+  let _itens = [];
+
+  function abrir(pedidoId, itens) {
+    _pedidoId = pedidoId;
+    _itens = JSON.parse(JSON.stringify(itens)); // cópia
+    _renderizar();
+    document.getElementById('modalEditarPedido').classList.add('is-open');
+  }
+
+  function fechar() {
+    document.getElementById('modalEditarPedido').classList.remove('is-open');
+    _pedidoId = null;
+    _itens = [];
+  }
+
+  function _renderizar() {
+    const body = document.getElementById('editarPedidoBody');
+    const total = _itens.reduce((s, i) => s + i.preco * i.qty, 0);
+
+    body.innerHTML = `
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">
+        Altere quantidades, remova itens ou adicione novos produtos.
+      </p>
+      ${_itens.map((item, idx) => `
+        <div class="carrinho-item">
+          <div class="carrinho-item__foto">
+            ${item.imagem_url
+              ? `<img src="${item.imagem_url}" alt="${item.nome}" onerror="this.parentElement.innerHTML='🛍️'"/>`
+              : '🛍️'}
+          </div>
+          <div style="flex:1">
+            <div class="carrinho-item__nome">${item.nome}</div>
+            <div class="carrinho-item__preco">${formatMoney(item.preco)} cada</div>
+          </div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="EditarPedido.alterarQty(${idx}, -1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="EditarPedido.alterarQty(${idx}, 1)">+</button>
+          </div>
+          <div style="min-width:80px;text-align:right;font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold)">
+            ${formatMoney(item.preco * item.qty)}
+          </div>
+          <button onclick="EditarPedido.remover(${idx})"
+            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px">✕</button>
+        </div>`).join('')}
+      <div class="carrinho-total">Total: ${formatMoney(total)}</div>
+      <hr style="border-color:var(--border-subtle);margin:16px 0"/>
+      <p style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:12px;">
+        Adicionar produtos:
+      </p>
+      <div id="editarProdutosLista"></div>`;
+
+    _carregarProdutos();
+  }
+
+  async function _carregarProdutos() {
+    const { data } = await _sb.from('produtos').select('*').eq('disponivel', true).order('nome');
+    if (!data) return;
+
+    document.getElementById('editarProdutosLista').innerHTML = data.map(p => `
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        padding:8px 0;border-bottom:1px solid var(--border-subtle);gap:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:500">${p.nome}</div>
+          <div style="font-size:12px;color:var(--gold)">${formatMoney(p.preco)}</div>
+        </div>
+        <button onclick='EditarPedido.adicionarProduto(${JSON.stringify(p)})'
+          style="font-size:11px;padding:5px 12px;border-radius:999px;
+          border:1px solid var(--gold);background:transparent;color:var(--gold);
+          cursor:pointer;font-family:Montserrat,sans-serif;font-weight:600;white-space:nowrap;">
+          + Add
+        </button>
+      </div>`).join('');
+  }
+
+  function alterarQty(idx, delta) {
+    _itens[idx].qty = Math.max(1, _itens[idx].qty + delta);
+    _renderizar();
+  }
+
+  function remover(idx) {
+    _itens.splice(idx, 1);
+    _renderizar();
+  }
+
+  function adicionarProduto(produto) {
+    const idx = _itens.findIndex(i => i.id === produto.id);
+    if (idx >= 0) {
+      _itens[idx].qty += 1;
+    } else {
+      _itens.push({ id: produto.id, nome: produto.nome, preco: produto.preco, imagem_url: produto.imagem_url || null, qty: 1 });
+    }
+    _renderizar();
+  }
+
+  async function salvar() {
+    if (_itens.length === 0) { Toast.show('Adicione pelo menos 1 item.', 'error'); return; }
+
+    const btn = document.getElementById('btnSalvarEdicao');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Salvando...';
+
+    const total = _itens.reduce((s, i) => s + i.preco * i.qty, 0);
+    const itens  = _itens.map(i => ({ ...i, subtotal: i.preco * i.qty }));
+
+    const { error } = await _sb.from('pedidos').update({ itens, total }).eq('id', _pedidoId);
+
+    btn.disabled = false;
+    btn.innerHTML = 'Salvar Alterações';
+
+    if (error) { Toast.show('Erro ao salvar: ' + error.message, 'error'); return; }
+
+    Toast.show('Pedido atualizado com sucesso!', 'success');
+    fechar();
+    Historico.carregar();
+  }
+
+  return { abrir, fechar, alterarQty, remover, adicionarProduto, salvar };
+})();
   
 // ── BOOT ──
 function entrarNaLoja() {
@@ -1577,5 +1700,21 @@ async function _verificarPedidoSeparado() {
 }
 
 </script>
+
+  <!-- ── MODAL: EDITAR PEDIDO ── -->
+<div class="modal-overlay" id="modalEditarPedido">
+  <div class="modal">
+    <div class="modal__header">
+      <span class="modal__title">✏️ Editar Pedido</span>
+      <button class="modal__close" onclick="EditarPedido.fechar()">✕</button>
+    </div>
+    <div class="modal__body" id="editarPedidoBody"></div>
+    <div class="modal__footer">
+      <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="EditarPedido.fechar()">Cancelar</button>
+      <button class="btn btn--primary" id="btnSalvarEdicao" onclick="EditarPedido.salvar()">Salvar Alterações</button>
+    </div>
+  </div>
+</div>
+  
 </body>
 </html>
