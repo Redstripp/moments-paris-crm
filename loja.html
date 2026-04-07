@@ -1449,11 +1449,18 @@ const Historico = (() => {
               <div style="font-size:13px;font-weight:600">Pedido #${p.id.slice(-6).toUpperCase()}</div>
               <div class="historico-item__data">🕐 ${data_fmt}</div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span class="historico-item__total">R$ ${Number(p.total).toLocaleString('pt-BR', {minimumFractionDigits:2})}</span>
               <span class="historico-item__status" style="color:${st.cor};border-color:${st.cor};background:${st.cor}22">
                 ${st.label}
               </span>
+              ${p.status === 'pendente' ? `
+                <button onclick="EditarPedido.abrir('${p.id}', ${JSON.stringify(p.itens).replace(/'/g, '&#39;')})"
+                  style="font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--gold);
+                  background:transparent;color:var(--gold);cursor:pointer;font-family:'Montserrat',sans-serif;
+                  font-weight:600;letter-spacing:0.05em;">
+                  ✏️ Editar
+                </button>` : ''}
             </div>
           </div>
           <div class="historico-item__body">
