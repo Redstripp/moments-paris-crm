@@ -1369,17 +1369,24 @@ const Pedido = (() => {
 
     // Notificação WhatsApp
     const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
-    const msg = encodeURIComponent(
-  `🛍️ *Novo Pedido — Moment's Paris*\n\n` +
-  `👤 Cliente: ${_cliente.nome}\n` +
-  `📱 Telefone: ${_cliente.telefone}\n` +
-  `📍 Endereço: ${_cliente.endereco}\n` +
-  `🏢 ID da Empresa: ${_cliente.empresa || 'Não informado'}\n` +
-  `🪪 CPF (iniciais): ${_cliente.cpf_iniciais || 'Não informado'}\n\n` +
-  `*Itens:*\n` +
-  itens.map(i => `• ${i.nome} × ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
-  `\n\n*Total: ${formatMoney(total)}*`
-);
+    const linhas = [
+  '\uD83D\uDECD\uFE0F *Novo Pedido \u2014 Moment\'s Paris*',
+  '',
+  '\uD83D\uDC64 *Cliente:* ' + _cliente.nome,
+  '\uD83D\uDCF1 *Telefone:* ' + _cliente.telefone,
+  '\uD83D\uDCCD *Endere\u00E7o:* ' + _cliente.endereco,
+  '\uD83C\uDFE2 *ID da Empresa:* ' + (_cliente.empresa || 'N\u00E3o informado'),
+  '\uD83D\uDCC4 *CPF (iniciais):* ' + (_cliente.cpf_iniciais || 'N\u00E3o informado'),
+  '',
+  '\uD83D\uDED2 *Itens do Pedido:*',
+].concat(
+  itens.map(i => '\u2714\uFE0F ' + i.nome + ' \u00D7 ' + i.qty + ' = ' + formatMoney(i.subtotal))
+).concat([
+  '',
+  '\uD83D\uDCB0 *Total: ' + formatMoney(total) + '*'
+]);
+
+const msg = encodeURIComponent(linhas.join('\n'));
     window.open(`https://wa.me/${numeroAdmin}?text=${msg}`, '_blank');
 
     Toast.show('Pedido enviado com sucesso! Aguarde a confirmação.', 'success');
