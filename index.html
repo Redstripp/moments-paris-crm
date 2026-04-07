@@ -7708,9 +7708,9 @@ document.getElementById('modal-produto').classList.add('is-open');
   async function salvar() {
   const nome = document.getElementById('fp-nome').value.trim();
   const preco = parseFloat(document.getElementById('fp-preco').value);
-  const imagem_url = document.getElementById('fp-imagem').value.trim();
   const descricao = document.getElementById('fp-desc').value.trim();
   const disponivel = document.getElementById('fp-disponivel').value === 'true';
+  const inputFile = document.getElementById('fp-imagem-file');
 
   document.getElementById('err-fp-nome').textContent = '';
   document.getElementById('err-fp-preco').textContent = '';
@@ -7727,17 +7727,37 @@ document.getElementById('modal-produto').classList.add('is-open');
   btn.innerHTML = '<span class="spinner"></span> Salvando...';
 
   try {
+    let imagem_url = document.getElementById('fp-imagem').value.trim() || null;
+
+    // Se há novo arquivo selecionado, faz upload para o Storage
+    const file = inputFile?._fileParaUpload;
+    if (file) {
+      const ext = file.name.split('.').pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const sb = DB.getClient();
+
+      const { error: upErr } = await sb.storage
+        .from('produtos')
+        .upload(path, file, { contentType: file.type, upsert: false });
+
+      if (upErr) throw upErr;
+
+      const { data: urlData } = sb.storage.from('produtos').getPublicUrl(path);
+      imagem_url = urlData.publicUrl;
+    }
+
     const categoria = document.getElementById('fp-categoria').value;
-    const payload = { nome, preco, imagem_url: imagem_url || null, descricao: descricao || null, disponivel, categoria: categoria || null };
+    const payload = { nome, preco, imagem_url, descricao: descricao || null, disponivel, categoria: categoria || null };
 
     if (_editId) {
-      await _sb().from('produtos').update(payload).eq('id', _editId);
+      await DB.getClient().from('produtos').update(payload).eq('id', _editId);
       Toast.show('Produto atualizado!', 'success');
     } else {
-      await _sb().from('produtos').insert(payload);
+      await DB.getClient().from('produtos').insert(payload);
       Toast.show('Produto adicionado!', 'success');
     }
 
+    if (inputFile) inputFile._fileParaUpload = null;
     fechar();
     await ProdutosPage.render();
   } catch(e) {
@@ -7752,15 +7772,13 @@ document.getElementById('modal-produto').classList.add('is-open');
   const file = input.files[0];
   if (!file) return;
 
-  // Bloqueia imagens acima de 500KB
   const MAX_KB = 500;
   if (file.size > MAX_KB * 1024) {
-    Toast.show(`Imagem muito grande. Máximo permitido: ${MAX_KB}KB. Esta tem ${(file.size/1024).toFixed(0)}KB.`, 'error');
+    Toast.show(`Imagem muito grande. Máximo: ${MAX_KB}KB. Esta tem ${(file.size/1024).toFixed(0)}KB.`, 'error');
     input.value = '';
     return;
   }
 
-  // Bloqueia tipos não permitidos
   const TIPOS = ['image/jpeg', 'image/png', 'image/webp'];
   if (!TIPOS.includes(file.type)) {
     Toast.show('Formato inválido. Use JPG, PNG ou WEBP.', 'error');
@@ -7768,9 +7786,12 @@ document.getElementById('modal-produto').classList.add('is-open');
     return;
   }
 
+  // Guarda o arquivo para upload no momento de salvar
+  input._fileParaUpload = file;
+
+  // Mostra preview local (só visual, não salva base64)
   const reader = new FileReader();
   reader.onload = function(e) {
-    document.getElementById('fp-imagem').value = e.target.result;
     const preview = document.getElementById('fp-imagem-preview');
     const previewImg = document.getElementById('fp-imagem-preview-img');
     previewImg.src = e.target.result;
@@ -7778,6 +7799,7 @@ document.getElementById('modal-produto').classList.add('is-open');
   };
   reader.readAsDataURL(file);
 }
+  
 return { abrir, fechar, salvar, previewImagem };
 })();
 
