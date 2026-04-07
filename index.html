@@ -7605,6 +7605,16 @@ const ProdutosPage = (() => {
 
   async function excluir(id) {
     if (!confirm('Excluir este produto?')) return;
+
+    // Busca a imagem antes de deletar
+    const { data: prod } = await _sb().from('produtos').select('imagem_url').eq('id', id).single();
+
+    // Se tiver imagem no Storage, apaga ela primeiro
+    if (prod?.imagem_url && prod.imagem_url.includes('/storage/v1/object/public/produtos/')) {
+      const path = prod.imagem_url.split('/storage/v1/object/public/produtos/')[1];
+      await _sb().storage.from('produtos').remove([path]);
+    }
+
     await _sb().from('produtos').delete().eq('id', id);
     await render();
     Toast.show('Produto excluído.', 'info');
@@ -7732,6 +7742,12 @@ document.getElementById('modal-produto').classList.add('is-open');
     // Se há novo arquivo selecionado, faz upload para o Storage
     const file = inputFile?._fileParaUpload;
     if (file) {
+      // Se está editando e já tinha imagem no Storage, apaga a antiga
+      if (_editId && imagem_url && imagem_url.includes('/storage/v1/object/public/produtos/')) {
+        const oldPath = imagem_url.split('/storage/v1/object/public/produtos/')[1];
+        await DB.getClient().storage.from('produtos').remove([oldPath]);
+      }
+
       const ext = file.name.split('.').pop();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const sb = DB.getClient();
