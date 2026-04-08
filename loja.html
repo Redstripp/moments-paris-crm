@@ -1868,7 +1868,7 @@ async function _verificarPedidoSeparado() {
 } 
 
   // ── CARRINHO FLUTUANTE ──
-document.addEventListener('scroll', () => {
+document.getElementById('lojaWrap').addEventListener('scroll', () => {
   const header = document.querySelector('.loja-header');
   const flutuante = document.getElementById('carrinhoFlutuante');
   if (!header || !flutuante) return;
