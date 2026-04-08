@@ -1868,20 +1868,18 @@ async function _verificarPedidoSeparado() {
 } 
 
   // ── CARRINHO FLUTUANTE ──
-document.getElementById('lojaWrap').addEventListener('scroll', () => {
-  const header = document.querySelector('.loja-header');
-  const flutuante = document.getElementById('carrinhoFlutuante');
-  if (!header || !flutuante) return;
-
-  const headerVisivel = header.getBoundingClientRect().bottom > 0;
-      if (headerVisivel) {
-      flutuante.style.display = 'none';
-    } else {
+  window.addEventListener('scroll', () => {
+    const flutuante = document.getElementById('carrinhoFlutuante');
+    if (!flutuante) return;
+  
+    if (window.scrollY > 80) {
       flutuante.style.display = 'flex';
       flutuante.style.alignItems = 'center';
       flutuante.style.justifyContent = 'center';
+    } else {
+      flutuante.style.display = 'none';
     }
-});
+  });
   
   function alternarTema() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
