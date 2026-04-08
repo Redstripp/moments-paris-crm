@@ -1737,20 +1737,16 @@ const EditarPedido = (() => {
     carrinhoOriginal: JSON.parse(JSON.stringify(_carrinho))
   };
 
-  // Mescla itens do pedido com o carrinho atual
+  // Substitui carrinho pelos itens do pedido
+  _carrinho = [];
   itens.forEach(item => {
-    const idx = _carrinho.findIndex(i => i.id === item.id);
-    if (idx >= 0) {
-      _carrinho[idx].qty += item.qty;
-    } else {
-      _carrinho.push({
-        id: item.id,
-        nome: item.nome,
-        preco: item.preco,
-        imagem_url: item.imagem_url || null,
-        qty: item.qty
-      });
-    }
+    _carrinho.push({
+      id: item.id,
+      nome: item.nome,
+      preco: item.preco,
+      imagem_url: item.imagem_url || null,
+      qty: item.qty
+    });
   });
 
   localStorage.setItem('loja_carrinho', JSON.stringify(_carrinho));
