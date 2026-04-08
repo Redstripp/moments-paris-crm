@@ -1874,7 +1874,13 @@ window.addEventListener('scroll', () => {
   if (!header || !flutuante) return;
 
   const headerVisivel = header.getBoundingClientRect().bottom > 0;
-  flutuante.style.display = headerVisivel ? 'none' : 'flex';
+      if (headerVisivel) {
+      flutuante.style.display = 'none';
+    } else {
+      flutuante.style.display = 'flex';
+      flutuante.style.alignItems = 'center';
+      flutuante.style.justifyContent = 'center';
+    }
 });
   
   function alternarTema() {
