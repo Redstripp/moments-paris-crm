@@ -1455,36 +1455,24 @@ const Pedido = (() => {
     Carrinho.atualizarBadge();
     document.getElementById('modalConfirm').classList.remove('is-open');
 
-    // Notificação WhatsApp
-    const numeroAdmin = '5587999576869'; // ← SUBSTITUA pelo seu número com DDI+DDD
-    
-    const msg = encodeURIComponent(
-      `*Novo Pedido - Moment's Paris*\n\n` +
-      `*Cliente:* ${_cliente.nome}\n` +
-      `*Telefone:* ${_cliente.telefone}\n` +
-      `*Endereco:* ${_cliente.endereco}\n` +
-      `*Empresa:* ${_cliente.empresa || 'Nao informado'}\n` +
-      `*CPF (iniciais):* ${_cliente.cpf_iniciais || 'Nao informado'}\n\n` +
-      `*Itens:*\n` +
-      itens.map(i => `- ${i.nome} x ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
-      `\n\n*Total: ${formatMoney(total)}*`
-    );
-    
-    // Cria link clicável em vez de popup (mais confiável no mobile)
-    const waUrl = `https://wa.me/${numeroAdmin}?text=${msg}`;
-    const linkWa = document.createElement('a');
-    linkWa.href = waUrl;
-    linkWa.target = '_blank';
-    linkWa.rel = 'noopener noreferrer';
-    linkWa.style.cssText = 'display:block;margin-top:16px;padding:12px;background:#25D366;color:#000;font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;text-align:center;border-radius:10px;text-decoration:none;letter-spacing:0.05em;';
-    linkWa.textContent = '📲 Toque aqui para enviar pelo WhatsApp';
+    // Fecha modal e volta para loja
+document.getElementById('modalConfirm').classList.remove('is-open');
+Toast.show('✅ Pedido confirmado com sucesso!', 'success');
 
-    const confirmBody = document.getElementById('confirmBody');
-    confirmBody.innerHTML = '<div style="text-align:center;padding:20px 0;font-size:15px;">✅ Pedido registrado com sucesso!</div>';
-    confirmBody.appendChild(linkWa);
-    document.getElementById('modalConfirm').classList.add('is-open');
-    Toast.show('Pedido salvo! Toque no botão verde para enviar pelo WhatsApp.', 'success');
-    document.getElementById('btnConfirmarPedido').onclick = null;
+// Abre WhatsApp em nova aba silenciosamente
+const numeroAdmin = '5587999576869';
+const msg = encodeURIComponent(
+  `*Novo Pedido - Moment's Paris*\n\n` +
+  `*Cliente:* ${_cliente.nome}\n` +
+  `*Telefone:* ${_cliente.telefone}\n` +
+  `*Endereco:* ${_cliente.endereco}\n` +
+  `*Empresa:* ${_cliente.empresa || 'Nao informado'}\n` +
+  `*CPF (iniciais):* ${_cliente.cpf_iniciais || 'Nao informado'}\n\n` +
+  `*Itens:*\n` +
+  itens.map(i => `- ${i.nome} x ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
+  `\n\n*Total: ${formatMoney(total)}*`
+);
+window.open(`https://wa.me/${numeroAdmin}?text=${msg}`, '_blank');
   }
   
   async function salvarEdicao() {
