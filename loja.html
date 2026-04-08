@@ -1182,8 +1182,17 @@ const { error } = await _sb.from('clientes_loja').insert({
     }
 
     RateLimit.resetar(tel);
+    // Salva apenas o necessário — sem senha
     _cliente = data;
-    localStorage.setItem('loja_cliente', JSON.stringify(data));
+    const clienteSalvo = {
+      id: data.id,
+      nome: data.nome,
+      telefone: data.telefone,
+      endereco: data.endereco,
+      empresa: data.empresa || null,
+      cpf_iniciais: data.cpf_iniciais || null
+    };
+    localStorage.setItem('loja_cliente', JSON.stringify(clienteSalvo));
     entrarNaLoja();
   }
 
