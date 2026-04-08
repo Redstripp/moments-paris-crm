@@ -1760,6 +1760,7 @@ const EditarPedido = (() => {
   document.getElementById('bannerEdicaoId').textContent = '#' + pedidoId.slice(-6).toUpperCase();
   document.getElementById('bannerEdicao').style.display = 'flex';
   document.querySelector('.carrinho-btn').classList.add('carrinho-btn--editando');
+  document.getElementById('lojaWrap').style.paddingTop = '56px';
 }
 
 function cancelar() {
@@ -1772,6 +1773,7 @@ function cancelar() {
   document.querySelector('.carrinho-btn').classList.remove('carrinho-btn--editando');
   Carrinho.fechar();
   Toast.show('Edição cancelada. Carrinho restaurado.', 'info');
+  document.getElementById('lojaWrap').style.paddingTop = '0';
 }
 
   return { abrir, abrirPorBotao, fechar, alterarQty, remover, adicionarProduto, salvar, cancelar };
