@@ -663,10 +663,20 @@
       .logout-btn { font-size: 10px; padding: 6px 8px; }
     }
 
-    @keyframes slideDown {
+  @keyframes slideDown {
       from { transform:translateY(-100%); opacity:0; }
       to   { transform:translateY(0);     opacity:1; }
     }
+
+  @keyframes pulsarOuro {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
+    50%       { box-shadow: 0 0 0 6px rgba(201,168,76,0); }
+  }
+  .carrinho-btn--editando {
+    border-color: var(--gold) !important;
+    color: var(--gold) !important;
+    animation: pulsarOuro 1.8s ease infinite;
+  }
 
     /* ── TOAST ── */
 .toast-container {
@@ -779,6 +789,32 @@
 <!-- ── LOJA ── -->
 <div class="loja-wrap" id="lojaWrap">
 <!-- Banner pedido separado -->
+<div id="bannerEdicao" style="display:none;
+  position:fixed; top:0; left:0; right:0; z-index:9998;
+  background:linear-gradient(135deg,#1a1200,#2d1f00);
+  border-bottom:2px solid var(--gold);
+  padding:10px 24px;
+  align-items:center; justify-content:space-between; gap:12px;
+  animation: slideDown 0.4s ease;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span style="font-size:1.4rem;">✏️</span>
+    <div>
+      <div style="font-size:13px;font-weight:600;color:var(--gold);letter-spacing:0.05em;">
+        Modo Edição ativo
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:1px;">
+        Pedido <span id="bannerEdicaoId" style="color:var(--gold-light);font-weight:600"></span> — adicione ou remova produtos e finalize para salvar.
+      </div>
+    </div>
+  </div>
+  <button onclick="EditarPedido.cancelar()"
+    style="background:none;border:1px solid var(--border-default);border-radius:6px;
+    color:var(--text-muted);font-size:11px;padding:6px 12px;cursor:pointer;
+    font-family:'Montserrat',sans-serif;white-space:nowrap;transition:all 0.2s;"
+    onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)'"
+    onmouseout="this.style.borderColor='var(--border-default)';this.style.color='var(--text-muted)'">
+    ✕ Cancelar edição
+  </button>
 <div id="bannerSeparado" style="
   display:none;
   position:fixed;
@@ -790,8 +826,7 @@
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  animation: slideDown 0.4s ease;
-">
+  animation: slideDown 0.4s ease;">
   <div style="display:flex;align-items:center;gap:12px;">
     <span style="font-size:1.6rem;">📦</span>
     <div>
@@ -880,7 +915,7 @@
     <div class="modal__footer">
       <button class="btn btn--secondary" style="width:auto;padding:10px 16px" onclick="Carrinho.fechar()">Continuar</button>
       <button class="btn btn--danger" onclick="Carrinho.limpar()" style="margin-bottom:8px">🗑️ Limpar Carrinho</button>
-      <button class="btn btn--primary" onclick="Carrinho.finalizar()">Finalizar Pedido</button>
+      <button class="btn btn--primary" id="btnFinalizarCarrinho" onclick="Carrinho.finalizar()">Finalizar Pedido</button>
     </div>
   </div>
 </div>
@@ -933,6 +968,7 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
 
 let _cliente = null;
 let _carrinho = [];
+let _modoEdicao = null; // null = normal | { pedidoId, carrinhoOriginal } = editando
 
 // ── UTILITÁRIOS ──
 function formatPhone(input) {
@@ -1286,19 +1322,34 @@ const Carrinho = (() => {
   }
 
   function abrir() {
-    renderizar();
-    document.getElementById('modalCarrinho').classList.add('is-open');
+  renderizar();
+  const btn = document.getElementById('btnFinalizarCarrinho');
+  if (_modoEdicao) {
+    btn.textContent = '💾 Salvar Alterações';
+    btn.style.background = 'linear-gradient(135deg, #1a4a2a, #27ae60)';
+  } else {
+    btn.textContent = 'Finalizar Pedido';
+    btn.style.background = '';
   }
+  document.getElementById('modalCarrinho').classList.add('is-open');
+}
 
   function fechar() {
     document.getElementById('modalCarrinho').classList.remove('is-open');
   }
 
   function finalizar() {
-    if (_carrinho.length === 0) return;
+  if (_carrinho.length === 0) {
+    Toast.show('Adicione pelo menos 1 produto.', 'error');
+    return;
+  }
+  if (_modoEdicao) {
+    Pedido.salvarEdicao();
+  } else {
     fechar();
     Pedido.mostrarConfirmacao();
   }
+}
 
   function limpar() {
   if (!confirm('Deseja remover todos os produtos do carrinho?')) return;
@@ -1396,10 +1447,48 @@ const Pedido = (() => {
 
     Toast.show('Pedido salvo! Toque no botão verde para enviar pelo WhatsApp.', 'success');
   }
+  
+  async function salvarEdicao() {
+    const btn = document.getElementById('btnFinalizarCarrinho');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Salvando...';
 
-  return { mostrarConfirmacao, confirmar };
+    const total = _carrinho.reduce((s, i) => s + i.preco * i.qty, 0);
+    const itens = _carrinho.map(i => ({
+      id: i.id,
+      nome: i.nome,
+      preco: i.preco,
+      qty: i.qty,
+      subtotal: i.preco * i.qty,
+      imagem_url: i.imagem_url || null
+    }));
+
+    const { error } = await _sb
+      .from('pedidos')
+      .update({ itens, total })
+      .eq('id', _modoEdicao.pedidoId);
+
+    btn.disabled = false;
+    btn.innerHTML = '💾 Salvar Alterações';
+
+    if (error) {
+      Toast.show('Erro ao salvar: ' + error.message, 'error');
+      return;
+    }
+
+    _carrinho = [];
+    _modoEdicao = null;
+    localStorage.removeItem('loja_carrinho');
+    Carrinho.atualizarBadge();
+    Carrinho.fechar();
+    document.getElementById('bannerEdicao').style.display = 'none';
+    document.querySelector('.carrinho-btn').classList.remove('carrinho-btn--editando');
+    Toast.show('Pedido atualizado com sucesso! ✅', 'success');
+  }
+
+  return { mostrarConfirmacao, confirmar, salvarEdicao };
 })();
-
+  
 // ── HISTÓRICO ──
 const Historico = (() => {
   function abrir() {
@@ -1640,10 +1729,55 @@ const EditarPedido = (() => {
   function abrirPorBotao(btn) {
   const id = btn.getAttribute('data-id');
   const itens = JSON.parse(btn.getAttribute('data-itens').replace(/&apos;/g, "'"));
-  abrir(id, itens);
+
+  // Salva o estado atual do modo edição
+  _modoEdicao = {
+    pedidoId: id,
+    carrinhoOriginal: JSON.parse(JSON.stringify(_carrinho))
+  };
+
+  // Mescla itens do pedido com o carrinho atual
+  itens.forEach(item => {
+    const idx = _carrinho.findIndex(i => i.id === item.id);
+    if (idx >= 0) {
+      _carrinho[idx].qty += item.qty;
+    } else {
+      _carrinho.push({
+        id: item.id,
+        nome: item.nome,
+        preco: item.preco,
+        imagem_url: item.imagem_url || null,
+        qty: item.qty
+      });
+    }
+  });
+
+  _salvarCarrinho();
+  Carrinho.atualizarBadge();
+  Historico.fechar();
+  _mostrarBarraEdicao(id);
+  Carrinho.abrir();
 }
 
-  return { abrir, abrirPorBotao, fechar, alterarQty, remover, adicionarProduto, salvar };
+  function _mostrarBarraEdicao(pedidoId) {
+  document.getElementById('bannerEdicaoId').textContent = '#' + pedidoId.slice(-6).toUpperCase();
+  document.getElementById('bannerEdicao').style.display = 'flex';
+  document.querySelector('.carrinho-btn').classList.add('carrinho-btn--editando');
+}
+
+function cancelar() {
+  // Restaura carrinho original
+  _carrinho = JSON.parse(JSON.stringify(_modoEdicao.carrinhoOriginal));
+  _modoEdicao = null;
+  _salvarCarrinho();
+  Carrinho.atualizarBadge();
+  document.getElementById('bannerEdicao').style.display = 'none';
+  document.querySelector('.carrinho-btn').classList.remove('carrinho-btn--editando');
+  Carrinho.fechar();
+  Toast.show('Edição cancelada. Carrinho restaurado.', 'info');
+}
+
+  return { abrir, abrirPorBotao, fechar, alterarQty, remover, adicionarProduto, salvar, cancelar };
 })();
   
 // ── BOOT ──
