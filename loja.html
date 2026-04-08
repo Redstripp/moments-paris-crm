@@ -1483,8 +1483,8 @@ const Pedido = (() => {
     confirmBody.innerHTML = '<div style="text-align:center;padding:20px 0;font-size:15px;">✅ Pedido registrado com sucesso!</div>';
     confirmBody.appendChild(linkWa);
     document.getElementById('modalConfirm').classList.add('is-open');
-
     Toast.show('Pedido salvo! Toque no botão verde para enviar pelo WhatsApp.', 'success');
+    document.getElementById('btnConfirmarPedido').onclick = null;
   }
   
   async function salvarEdicao() {
