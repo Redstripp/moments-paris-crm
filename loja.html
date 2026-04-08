@@ -905,6 +905,42 @@
   </div>
 </div>
 
+  <!-- ── BOTÃO FLUTUANTE CARRINHO ── -->
+<button id="carrinhoFlutuante" onclick="Carrinho.abrir()" style="
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  font-size: 22px;
+  align-items: center;
+  justify-content: center;
+">
+  🛍️
+  <span id="carrinhoFlutuanteBadge" style="
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #fff;
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  ">0</span>
+</button>
+
 <!-- ── MODAL: CARRINHO ── -->
 <div class="modal-overlay" id="modalCarrinho">
   <div class="modal">
@@ -1287,9 +1323,11 @@ const Carrinho = (() => {
   }
 
   function atualizarBadge() {
-    const total = _carrinho.reduce((s, i) => s + i.qty, 0);
-    document.getElementById('carrinhoBadge').textContent = total;
-  }
+  const total = _carrinho.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('carrinhoBadge').textContent = total;
+  const f = document.getElementById('carrinhoFlutuanteBadge');
+  if (f) f.textContent = total;
+}
 
   function renderizar() {
     const body = document.getElementById('carrinhoBody');
@@ -1828,6 +1866,17 @@ async function _verificarPedidoSeparado() {
     banner.style.display = 'flex';
   }
 } 
+
+  // ── CARRINHO FLUTUANTE ──
+window.addEventListener('scroll', () => {
+  const header = document.querySelector('.loja-header');
+  const flutuante = document.getElementById('carrinhoFlutuante');
+  if (!header || !flutuante) return;
+
+  const headerVisivel = header.getBoundingClientRect().bottom > 0;
+  flutuante.style.display = headerVisivel ? 'none' : 'flex';
+});
+  
   function alternarTema() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
   const novoTema = isLight ? 'dark' : 'light';
