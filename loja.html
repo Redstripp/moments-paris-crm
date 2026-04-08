@@ -1426,6 +1426,8 @@ const Pedido = (() => {
 
   async function confirmar() {
     const btn = document.getElementById('btnConfirmarPedido');
+    if (btn.dataset.enviando === 'true') return;
+    btn.dataset.enviando = 'true';
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Enviando...';
 
