@@ -1457,33 +1457,34 @@ const Pedido = (() => {
 
     btn.disabled = false;
     btn.innerHTML = 'Confirmar Pedido';
+    btn.dataset.enviando = 'false'; // 🆕 reseta proteção anti-duplo-clique
 
     if (error) { Toast.show('Erro ao enviar pedido: ' + error.message, 'error'); return; }
-    
+
+    // Fecha modal UMA única vez
+    document.getElementById('modalConfirm').classList.remove('is-open');
+
     // Limpa carrinho
     _carrinho = [];
     localStorage.removeItem('loja_carrinho');
     Carrinho.atualizarBadge();
-    document.getElementById('modalConfirm').classList.remove('is-open');
 
-    // Fecha modal e volta para loja
-document.getElementById('modalConfirm').classList.remove('is-open');
-Toast.show('✅ Pedido confirmado com sucesso!', 'success');
+    Toast.show('✅ Pedido confirmado com sucesso!', 'success');
 
-// Abre WhatsApp em nova aba silenciosamente
-const numeroAdmin = '5587999576869';
-const msg = encodeURIComponent(
-  `*Novo Pedido - Moment's Paris*\n\n` +
-  `*Cliente:* ${_cliente.nome}\n` +
-  `*Telefone:* ${_cliente.telefone}\n` +
-  `*Endereco:* ${_cliente.endereco}\n` +
-  `*Empresa:* ${_cliente.empresa || 'Nao informado'}\n` +
-  `*CPF (iniciais):* ${_cliente.cpf_iniciais || 'Nao informado'}\n\n` +
-  `*Itens:*\n` +
-  itens.map(i => `- ${i.nome} x ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
-  `\n\n*Total: ${formatMoney(total)}*`
-);
-window.open(`https://wa.me/${numeroAdmin}?text=${msg}`, '_blank');
+    // Abre WhatsApp em nova aba
+    const numeroAdmin = '5587999576869';
+    const msg = encodeURIComponent(
+      `*Novo Pedido - Moment's Paris*\n\n` +
+      `*Cliente:* ${_cliente.nome}\n` +
+      `*Telefone:* ${_cliente.telefone}\n` +
+      `*Endereco:* ${_cliente.endereco}\n` +
+      `*Empresa:* ${_cliente.empresa || 'Nao informado'}\n` +
+      `*CPF (iniciais):* ${_cliente.cpf_iniciais || 'Nao informado'}\n\n` +
+      `*Itens:*\n` +
+      itens.map(i => `- ${i.nome} x ${i.qty} = ${formatMoney(i.subtotal)}`).join('\n') +
+      `\n\n*Total: ${formatMoney(total)}*`
+    );
+    window.open(`https://wa.me/${numeroAdmin}?text=${msg}`, '_blank');
   }
   
   async function salvarEdicao() {
