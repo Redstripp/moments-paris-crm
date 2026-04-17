@@ -3628,6 +3628,20 @@
       <h2 class="page-header__title">Pedidos</h2>
       <p class="page-header__subtitle" id="js-pedidos-count">Carregando...</p>
     </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <button onclick="PdfExport.porPeriodo('hoje')"
+        style="padding:7px 14px;border-radius:6px;border:1px solid var(--border-default);background:transparent;color:var(--text-secondary);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+        📄 Hoje
+      </button>
+      <button onclick="PdfExport.porPeriodo('semana')"
+        style="padding:7px 14px;border-radius:6px;border:1px solid var(--border-default);background:transparent;color:var(--text-secondary);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+        📄 Esta Semana
+      </button>
+      <button onclick="PdfExport.porPeriodo('mes')"
+        style="padding:7px 14px;border-radius:6px;border:1px solid var(--border-default);background:transparent;color:var(--text-secondary);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;cursor:pointer;">
+        📄 Este Mês
+      </button>
+    </div>
   </div>
   <div style="margin-bottom:16px;">
     <input
