@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Moment's Paris — Loja</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     html[data-theme="light"] {
@@ -973,6 +975,35 @@
   </div>
 </div>
 
+<!-- ── MODAL: SUCESSO ── -->
+<div class="modal-overlay" id="modalSucesso">
+  <div class="modal" style="max-width:420px;text-align:center;">
+    <div class="modal__body" style="padding:40px 32px;">
+      <div style="font-size:52px;margin-bottom:16px;">🎉</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:8px;">
+        Pedido Confirmado!
+      </div>
+      <div style="font-size:12px;color:var(--text-secondary);margin-bottom:28px;">
+        Seu pedido foi enviado com sucesso. Em breve entraremos em contato.
+      </div>
+      <button onclick="ComprovanteCliente.baixar()"
+        style="width:100%;padding:12px;border-radius:var(--radius-md);
+        background:linear-gradient(135deg,var(--gold-dark),var(--gold));
+        border:none;color:#000;font-family:'Montserrat',sans-serif;
+        font-size:12px;font-weight:700;cursor:pointer;margin-bottom:10px;letter-spacing:0.05em;">
+        📄 Baixar Comprovante
+      </button>
+      <button onclick="document.getElementById('modalSucesso').classList.remove('is-open')"
+        style="width:100%;padding:11px;border-radius:var(--radius-md);
+        background:transparent;border:1px solid var(--border-default);
+        color:var(--text-secondary);font-family:'Montserrat',sans-serif;
+        font-size:12px;font-weight:600;cursor:pointer;">
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>  
+
 <!-- ── MODAL: CONFIRMAÇÃO ── -->
 <div class="modal-overlay" id="modalConfirm">
   <div class="modal">
@@ -1472,12 +1503,23 @@ const Pedido = (() => {
     // Fecha modal UMA única vez
     document.getElementById('modalConfirm').classList.remove('is-open');
 
+    // Guarda pedido para o comprovante ANTES de limpar o carrinho
+    ComprovanteCliente.guardar({
+      cliente_nome: _cliente.nome,
+      cliente_telefone: _cliente.telefone,
+      cliente_endereco: _cliente.endereco,
+      cliente_empresa: _cliente.empresa || null,
+      itens,
+      total
+    });
+
     // Limpa carrinho
     _carrinho = [];
     localStorage.removeItem('loja_carrinho');
     Carrinho.atualizarBadge();
 
-    Toast.show('✅ Pedido confirmado com sucesso!', 'success');
+    // Abre modal de sucesso com botão de comprovante
+    document.getElementById('modalSucesso').classList.add('is-open');
 
     // Abre WhatsApp em nova aba
     const numeroAdmin = '5587999576869';
@@ -1888,6 +1930,76 @@ async function _verificarPedidoSeparado() {
       flutuante.style.display = 'none';
     }
   });
+
+  const ComprovanteCliente = (() => {
+  let _pedidoAtual = null;
+
+  function guardar(pedido) {
+    _pedidoAtual = pedido;
+  }
+
+  function baixar() {
+    if (!_pedidoAtual) return;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const p = _pedidoAtual;
+
+    // Cabeçalho
+    doc.setFillColor(10, 10, 10);
+    doc.rect(0, 0, 210, 30, 'F');
+    doc.setTextColor(201, 168, 76);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text("MOMENT'S PARIS", 14, 13);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 180, 180);
+    doc.text('Comprovante de Pedido', 14, 22);
+
+    // Dados
+    const agora = new Date().toLocaleString('pt-BR', {
+      day:'2-digit', month:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit'
+    });
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text(`Data: ${agora}`, 14, 42);
+    doc.text(`Cliente: ${p.cliente_nome}`, 14, 49);
+    doc.text(`Telefone: ${p.cliente_telefone}`, 14, 56);
+    doc.text(`Endereço: ${p.cliente_endereco || 'Não informado'}`, 14, 63);
+    if (p.cliente_empresa) doc.text(`Empresa: ${p.cliente_empresa}`, 14, 70);
+
+    // Tabela de itens
+    doc.autoTable({
+      startY: 80,
+      head: [['Produto', 'Qtd', 'Preço Unit.', 'Subtotal']],
+      body: p.itens.map(i => [
+        i.nome,
+        i.qty,
+        `R$ ${Number(i.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        `R$ ${Number(i.subtotal).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      ]),
+      foot: [[
+        { content: 'TOTAL', colSpan: 3, styles: { halign: 'right', fontStyle: 'bold' } },
+        { content: `R$ ${Number(p.total).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, styles: { fontStyle: 'bold', textColor: [201, 168, 76] } }
+      ]],
+      headStyles: { fillColor: [30, 30, 30], textColor: [201, 168, 76], fontStyle: 'bold' },
+      footStyles: { fillColor: [245, 245, 245] },
+      alternateRowStyles: { fillColor: [250, 250, 250] },
+      styles: { fontSize: 9, cellPadding: 4 }
+    });
+
+    // Rodapé
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text("Obrigada pela sua compra! — Moment's Paris", 14, 290);
+
+    doc.save(`comprovante-${agora.replace(/[/:, ]/g, '-')}.pdf`);
+  }
+
+  return { guardar, baixar };
+})();
   
   function alternarTema() {
   const isLight = document.documentElement.getAttribute('data-theme') === 'light';
