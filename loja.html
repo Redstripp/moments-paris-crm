@@ -1197,6 +1197,14 @@ const { error } = await _sb.from('clientes_loja').insert({
   }
 
   function logout() {
+    // 🆕 Verifica se há itens no carrinho antes de sair
+    if (_carrinho.length > 0) {
+      const confirmou = confirm(
+        `Você tem ${_carrinho.length} item(ns) no carrinho.\nSe sair agora, seu carrinho será perdido.\n\nDeseja sair mesmo assim?`
+      );
+      if (!confirmou) return;
+    }
+
     _cliente = null;
     _carrinho = [];
     localStorage.removeItem('loja_cliente');
